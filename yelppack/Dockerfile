@@ -18,4 +18,4 @@ RUN ln -s /var/lib/gems/1.9.1/bin/fpm /usr/local/bin/fpm
 
 RUN git clone https://github.com/hashicorp/terraform.git /go/src/github.com/hashicorp/terraform && \
     cd /go/src/github.com/hashicorp/terraform && \
-    git checkout 56926a18f126c02877c5c25438f5a7c1805bbc87
+    git checkout v0.7.0

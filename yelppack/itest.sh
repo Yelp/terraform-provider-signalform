@@ -3,4 +3,4 @@
 set -eu
 
 dpkg -i "$1"
-test -x /nail/opt/bin/terraform-provider-signalform
+test -x /nail/opt/terraform-$2/bin/terraform-provider-signalform
