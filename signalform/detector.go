@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -170,8 +169,6 @@ func sendRequest(method string, url string, token string, payload []byte) (int, 
 	if err != nil {
 		return resp.StatusCode, nil, fmt.Errorf("Failed reading response body from %s request: %s", method, err.Error())
 	}
-	log.Printf("[INFO] Sent %s request to Signalfx \n%s", method, payload)
-	log.Printf("[INFO] Received %d response \n%s", resp.StatusCode, body)
 
 	return resp.StatusCode, body, nil
 }
@@ -197,7 +194,7 @@ func detectorCreate(d *schema.ResourceData, meta interface{}) error {
 		d.SetId(fmt.Sprintf("%s", mapped_resp["id"].(string)))
 		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
 	} else {
-		return fmt.Errorf("Failed creating detector %s with status %d: %s", d.Get("name"), status_code, err.Error())
+		return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 	}
 	return nil
 }
@@ -230,7 +227,7 @@ func detectorRead(d *schema.ResourceData, meta interface{}) error {
 			// This implies detector was deleted in the Signalfx UI and therefore we need to recreate it
 			d.SetId("")
 		} else {
-			return fmt.Errorf("Failed reading detector %s with status %d: %s", d.Get("name"), status_code, err.Error())
+			return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 		}
 	}
 	return nil
@@ -255,7 +252,7 @@ func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.Set("synced", 1)
 		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
 	} else {
-		return fmt.Errorf("Failed creating detector %s with status %d: %s", d.Get("name"), status_code, err.Error())
+		return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 	}
 	return nil
 }
@@ -267,10 +264,13 @@ func detectorDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", config.DetectorEndpoint, d.Id())
 	status_code, resp_body, err := sendRequest("DELETE", url, config.SfxToken, nil)
+	if err != nil {
+		return fmt.Errorf("Failed deleting detector %s: %s", d.Get("name"), err.Error())
+	}
 	if status_code < 400 || status_code == 404 {
 		d.SetId("")
 	} else {
-		return fmt.Errorf("Failed deleting detector %s with status %d and body %s: %s", d.Get("name"), status_code, resp_body, err.Error())
+		return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 	}
 	return nil
 }
