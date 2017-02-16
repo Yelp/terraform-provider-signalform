@@ -44,6 +44,36 @@ func detectorResource() *schema.Resource {
 				Type:     schema.TypeFloat,
 				Optional: true,
 			},
+			"show_data_markers": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "(false by default) When true, markers will be drawn for each datapoint within the visualization.",
+			},
+			"time_span_type": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateTimeSpanType,
+				Description:  "The type of time span defined for visualization. Must be either \"relative\" or \"absoulte\".",
+			},
+			"time_range": &schema.Schema{
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ConflictsWith: []string{"start_time", "end_time"},
+				Description:   "The time range prior to now to visualize, in milliseconds. You must specify time_span_type = \"relative\" too.",
+			},
+			"start_time": &schema.Schema{
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ConflictsWith: []string{"time_range"},
+				Description:   "Milliseconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
+			},
+			"end_time": &schema.Schema{
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ConflictsWith: []string{"time_range"},
+				Description:   "Milliseconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
+			},
 			"rule": &schema.Schema{
 				Type:     schema.TypeSet,
 				Required: true,
@@ -120,7 +150,36 @@ func getPayload(d *schema.ResourceData) ([]byte, error) {
 		payload["maxDelay"] = int(d.Get("maxDelay").(float64))
 	}
 
+	if viz := getVisualizationOptions(d); len(viz) > 0 {
+		payload["visualizationOptions"] = viz
+	}
+
 	return json.Marshal(payload)
+}
+
+func getVisualizationOptions(d *schema.ResourceData) map[string]interface{} {
+	viz := make(map[string]interface{})
+	if val, ok := d.GetOk("show_data_markers"); ok {
+		viz["showDataMarkers"] = val.(bool)
+	}
+
+	timeMap := make(map[string]interface{})
+	if val, ok := d.GetOk("time_span_type"); ok {
+		timeMap["type"] = val.(string)
+	}
+	if val, ok := d.GetOk("time_range"); ok {
+		timeMap["range"] = val.(int)
+	}
+	if val, ok := d.GetOk("start_time"); ok {
+		timeMap["start"] = val.(int)
+	}
+	if val, ok := d.GetOk("end_time"); ok {
+		timeMap["end"] = val.(int)
+	}
+	if len(timeMap) > 0 {
+		viz["time"] = timeMap
+	}
+	return viz
 }
 
 /*
@@ -301,4 +360,15 @@ func resourceRuleHash(v interface{}) int {
 	}
 
 	return hashcode.String(buf.String())
+}
+
+/*
+  Validates the time_span_type field against a list of allowed words.
+*/
+func validateTimeSpanType(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if value != "relative" && value != "absolute" {
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either relative or absolute", value))
+	}
+	return
 }
