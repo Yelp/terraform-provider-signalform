@@ -93,3 +93,18 @@ func TestResourceRuleHash(t *testing.T) {
 	expected := hashcode.String("Test Rule Name-Critical-Test Detect Label-true-")
 	assert.Equal(t, expected, resourceRuleHash(values))
 }
+
+func TestValidateTimeSpanTypeAbsolute(t *testing.T) {
+	_, errors := validateTimeSpanType("absolute", "time_span_type")
+	assert.Equal(t, len(errors), 0)
+}
+
+func TestValidateTimeSpanTypeRelative(t *testing.T) {
+	_, errors := validateTimeSpanType("relative", "time_span_type")
+	assert.Equal(t, len(errors), 0)
+}
+
+func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
+	_, errors := validateTimeSpanType("foo", "time_span_type")
+	assert.Equal(t, len(errors), 1)
+}
