@@ -110,7 +110,7 @@ func detectorResource() *schema.Resource {
 /*
   Use Resource object to construct json payload in order to create a detector
 */
-func getPayload(d *schema.ResourceData) ([]byte, error) {
+func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 	tf_rules := d.Get("rule").(*schema.Set).List()
 	rules_list := make([]map[string]interface{}, len(tf_rules))
@@ -143,14 +143,14 @@ func getPayload(d *schema.ResourceData) ([]byte, error) {
 		payload["maxDelay"] = int(d.Get("maxDelay").(float64))
 	}
 
-	if viz := getVisualizationOptions(d); len(viz) > 0 {
+	if viz := getVisualizationOptionsDetector(d); len(viz) > 0 {
 		payload["visualizationOptions"] = viz
 	}
 
 	return json.Marshal(payload)
 }
 
-func getVisualizationOptions(d *schema.ResourceData) map[string]interface{} {
+func getVisualizationOptionsDetector(d *schema.ResourceData) map[string]interface{} {
 	viz := make(map[string]interface{})
 	if val, ok := d.GetOk("show_data_markers"); ok {
 		viz["showDataMarkers"] = val.(bool)
@@ -206,7 +206,7 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 func detectorCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := config.ProviderEndpoint
-	payload, err := getPayload(d)
+	payload, err := getPayloadDetector(d)
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
@@ -262,7 +262,7 @@ func detectorRead(d *schema.ResourceData, meta interface{}) error {
 
 func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	payload, err := getPayload(d)
+	payload, err := getPayloadDetector(d)
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}

@@ -13,6 +13,7 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{},
 		ResourcesMap: map[string]*schema.Resource{
 			"detector": detectorResource(),
+			"chart":    chartResource(),
 		},
 		ConfigureFunc: signalformConfigure,
 	}
