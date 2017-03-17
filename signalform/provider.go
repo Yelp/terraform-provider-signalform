@@ -32,6 +32,6 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 }
 
 type signalformConfig struct {
-	DetectorEndpoint string `json:"detector_endpoint"`
+	ProviderEndpoint string `json:"provider_endpoint"`
 	SfxToken         string `json:"sfx_token"`
 }

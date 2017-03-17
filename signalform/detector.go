@@ -205,7 +205,7 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 */
 func detectorCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := config.DetectorEndpoint
+	url := config.ProviderEndpoint
 	payload, err := getPayload(d)
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
@@ -234,7 +234,7 @@ func detectorCreate(d *schema.ResourceData, meta interface{}) error {
 */
 func detectorRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := fmt.Sprintf("%s/%s", config.DetectorEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
 
 	status_code, resp_body, err := sendRequest("GET", url, config.SfxToken, nil)
 	if status_code == 200 {
@@ -266,7 +266,7 @@ func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
-	url := fmt.Sprintf("%s/%s", config.DetectorEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
 
 	status_code, resp_body, err := sendRequest("PUT", url, config.SfxToken, payload)
 	if status_code == 200 {
@@ -289,7 +289,7 @@ func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
 */
 func detectorDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := fmt.Sprintf("%s/%s", config.DetectorEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
 	status_code, resp_body, err := sendRequest("DELETE", url, config.SfxToken, nil)
 	if err != nil {
 		return fmt.Errorf("Failed deleting detector %s: %s", d.Get("name"), err.Error())
