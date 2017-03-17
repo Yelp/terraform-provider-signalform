@@ -31,6 +31,43 @@ func chartResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"chart_type": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"unit_prefix": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"color_by": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"show_event_lines": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"stacked": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"default_plot_type": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"minimum_resolution": &schema.Schema{
+				Type: schema.TypeInt,
+				// TODO: not sure about this
+				Optional: true,
+			},
+			"max_delay": &schema.Schema{
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+			"disable_sampling": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 
 		Create: chartCreate,
@@ -51,7 +88,7 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 	}
 
 	if viz := getVisualizationOptionsChart(d); len(viz) > 0 {
-		payload["visualizationOptions"] = viz
+		payload["options"] = viz
 	}
 
 	return json.Marshal(payload)
@@ -59,6 +96,94 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 
 func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	viz := make(map[string]interface{})
+	if val, ok := d.GetOk("chart_type"); ok {
+		viz["type"] = val.(string)
+	}
+	if val, ok := d.GetOk("unit_prefix"); ok {
+		viz["unitPrefix"] = val.(string)
+	}
+	if val, ok := d.GetOk("color_by"); ok {
+		viz["colorBy"] = val.(string)
+	}
+	if val, ok := d.GetOk("show_event_lines"); ok {
+		viz["showEventLines"] = val.(bool)
+	}
+	if val, ok := d.GetOk("stacked"); ok {
+		viz["stacked"] = val.(bool)
+	}
+	if val, ok := d.GetOk("default_plot_type"); ok {
+		viz["defaultPlotType"] = val.(string)
+	}
+
+	programOptions := make(map[string]interface{})
+	if val, ok := d.GetOk("minimum_resolution"); ok {
+		programOptions["minimumResolution"] = val.(int)
+	}
+	if val, ok := d.GetOk("max_delay"); ok {
+		programOptions["maxDelay"] = val.(int)
+	}
+	if val, ok := d.GetOk("disable_sampling"); ok {
+		programOptions["disableSampling"] = val.(bool)
+	}
+	if len(programOptions) > 0 {
+		viz["programOptions"] = programOptions
+	}
+
+	timeMap := make(map[string]interface{})
+	if val, ok := d.GetOk("time_span_type"); ok {
+		timeMap["type"] = val.(string)
+	}
+	if val, ok := d.GetOk("time_range"); ok {
+		timeMap["range"] = val.(int)
+	}
+	if val, ok := d.GetOk("start_time"); ok {
+		timeMap["start"] = val.(int)
+	}
+	if val, ok := d.GetOk("end_time"); ok {
+		timeMap["end"] = val.(int)
+	}
+	if len(timeMap) > 0 {
+		viz["time"] = timeMap
+	}
+
+	axisOptions := make(map[string]interface{})
+	if val, ok := d.GetOk("min_value_axis"); ok {
+		axisOptions["min"] = val.(int)
+	}
+	if val, ok := d.GetOk("max_value_axis"); ok {
+		axisOptions["max"] = val.(int)
+	}
+	if val, ok := d.GetOk("label_axis"); ok {
+		axisOptions["label"] = val.(string)
+	}
+	if val, ok := d.GetOk("line_high_watermark"); ok {
+		axisOptions["highWatermark"] = val.(int)
+	}
+	if val, ok := d.GetOk("line_low_watermark"); ok {
+		axisOptions["lowWatermark"] = val.(int)
+	}
+	if len(timeMap) > 0 {
+		viz["axes"] = axisOptions
+	}
+
+	lineChartOptions := make(map[string]interface{})
+	if val, ok := d.GetOk("metric_property"); ok {
+		lineChartOptions["property"] = val.(string)
+	}
+	if val, ok := d.GetOk("display_metric_property"); ok {
+		lineChartOptions["enabled"] = val.(bool)
+	}
+	if len(timeMap) > 0 {
+		viz["legendOptions"] = lineChartOptions
+	}
+
+	areaChartOptions := make(map[string]interface{})
+	if val, ok := d.GetOk("show_data_marker"); ok {
+		areaChartOptions["showDataMarkers"] = val.(string)
+	}
+	if len(timeMap) > 0 {
+		viz["areaChartOptions"] = lineChartOptions
+	}
 	return viz
 }
 
