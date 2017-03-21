@@ -12,38 +12,6 @@ import (
 func chartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"axis_left": &schema.Schema{
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"min_value": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  math.MinInt32,
-						},
-						"max_value": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  math.MaxInt32,
-						},
-						"label": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"high_watermark": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  math.MaxInt32,
-						},
-						"low_watermark": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  math.MinInt32,
-						},
-					},
-				},
-			},
 			"synced": &schema.Schema{
 				Type:     schema.TypeInt,
 				Required: true,
@@ -53,77 +21,137 @@ func chartResource() *schema.Resource {
 				Computed: true,
 			},
 			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the chart",
 			},
 			"description": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the chart (Optional)",
 			},
 			"programText": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Signalflow program text for the chart. More info at \"https://developers.signalfx.com/docs/signalflow-overview\"",
 			},
 			"unit_prefix": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "(Metric by default) Must be \"Metric\" or \"Binary\"",
 			},
 			"color_by": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"show_event_lines": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"default_plot_type": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "(Dimension by default) Must be \"Dimension\" or \"Metric\"",
 			},
 			"minimum_resolution": &schema.Schema{
-				Type: schema.TypeInt,
-				// TODO: not sure about this
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The minimum resolution to use for computing the underlying program",
 			},
 			"max_delay": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "How long to wait for late datapoints",
 			},
 			"disable_sampling": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "(false by default) If false, samples a subset of the output MTS, which improves UI performance",
 			},
 			"time_span_type": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Type of time interval of the chart. It must be \"absolute\" or \"relative\"",
+				ValidateFunc: validateTimeSpanType,
 			},
 			"time_range": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "(time_span_type \"relative\" only) Absolute minutes offset from now to visualize",
+				ConflictsWith: []string{"start_time", "end_time"},
 			},
 			"start_time": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "(type \"absolute\" only) Seconds since epoch to start the visualization",
+				ConflictsWith: []string{"time_range"},
 			},
 			"end_time": &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "(type \"absolute\" only) Seconds since epoch to end the visualization",
+				ConflictsWith: []string{"time_range"},
 			},
-			"metric_property": &schema.Schema{
-				Type:     schema.TypeString,
+			"axis_left": &schema.Schema{
+				Type:     schema.TypeSet,
 				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"min_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MinInt32,
+							Description: "The minimum value for the left axis",
+						},
+						"max_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MaxInt32,
+							Description: "The maximum value for the left axis",
+						},
+						"label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Label of the left axis",
+						},
+						"high_watermark": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MaxInt32,
+							Description: "A line to draw as a high watermark",
+						},
+						"low_watermark": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MinInt32,
+							Description: "A line to draw as a low watermark",
+						},
+					},
+				},
 			},
-			"display_metric_property": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
+			"properties_to_hide": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "List of properties that shouldn't be displayed in the chart legend (i.e. dimension names)",
 			},
-			"show_data_markers": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
+			"show_event_lines": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "(false by default) Whether vertical highlight lines should be drawn in the visualizations at times when events occurred",
 			},
-			"show_line_data_markers": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
+			"line_show_data_markers": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "(false by default) Show markers (circles) for each datapoint used to draw line charts",
+			},
+			"area_show_data_markers": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "(false by default) Show markers (circles) for each datapoint used to draw area charts",
+			},
+			"stacked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "(false by default) Whether area and bar charts in the visualization should be stacked",
+			},
+			"plot_type": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "(LineChart by default) The default plot display style for the visualization. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
+				ValidateFunc: validatePlotTypeTimeChart,
 			},
 		},
 
@@ -151,6 +179,9 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 	if axesOptions := getAxesOptions(d); len(axesOptions) > 0 {
 		viz["axes"] = axesOptions
 	}
+	if legendOptions := getLegendOptions(d); len(legendOptions) > 0 {
+		viz["legendOptions"] = legendOptions
+	}
 	if len(viz) > 0 {
 		payload["options"] = viz
 	}
@@ -158,6 +189,26 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 	a, e := json.Marshal(payload)
 	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
 	return a, e
+}
+
+func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
+	if properties, ok := d.GetOk("properties_to_hide"); ok {
+		properties := properties.([]interface{})
+		legendOptions := make(map[string]interface{})
+		properties_opts := make([]map[string]interface{}, len(properties))
+		for i, property := range properties {
+			property := property.(string)
+			item := make(map[string]interface{})
+			item["property"] = property
+			item["enabled"] = false
+			properties_opts[i] = item
+		}
+		if len(properties_opts) > 0 {
+			legendOptions["fields"] = properties_opts
+			return legendOptions
+		}
+	}
+	return nil
 }
 
 func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
@@ -199,7 +250,6 @@ func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
 					item["lowWatermark"] = val.(int)
 				}
 			}
-
 			axes_list_opts[i] = item
 		}
 		return axes_list_opts
@@ -257,23 +307,8 @@ func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{}
 		viz["time"] = timeMap
 	}
 
-	legendOptions := make(map[string]interface{})
-	fields := make(map[string]interface{})
-	var _tmp1 [1]map[string]interface{}
-	if val, ok := d.GetOk("metric_property"); ok {
-		fields["property"] = val.(string)
-	}
-	if val, ok := d.GetOk("display_metric_property"); ok {
-		fields["enabled"] = val.(bool)
-	}
-	if len(fields) > 0 {
-		_tmp1[0] = fields
-		legendOptions["fields"] = _tmp1
-		viz["legendOptions"] = legendOptions
-	}
-
 	areaChartOptions := make(map[string]interface{})
-	if val, ok := d.GetOk("show_data_markers"); ok {
+	if val, ok := d.GetOk("area_show_data_markers"); ok {
 		areaChartOptions["showDataMarkers"] = val.(bool)
 	}
 	if len(areaChartOptions) > 0 {
@@ -281,10 +316,10 @@ func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{}
 	}
 
 	lineChartOptions := make(map[string]interface{})
-	if val, ok := d.GetOk("show_line_data_markers"); ok {
+	if val, ok := d.GetOk("line_show_data_markers"); ok {
 		lineChartOptions["showDataMarkers"] = val.(bool)
 	}
-	if len(areaChartOptions) > 0 {
+	if len(lineChartOptions) > 0 {
 		viz["lineChartOptions"] = lineChartOptions
 	}
 	return viz
@@ -302,7 +337,7 @@ func chartCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	status_code, resp_body, err := sendRequest("POST", url, config.SfxToken, payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", resp_body, 0644)
+	_ = ioutil.WriteFile("/tmp/fdc_chartCreate2", resp_body, 0644)
 	if status_code == 200 {
 		mapped_resp := map[string]interface{}{}
 		err = json.Unmarshal(resp_body, &mapped_resp)

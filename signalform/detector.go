@@ -329,14 +329,3 @@ func resourceRuleHash(v interface{}) int {
 
 	return hashcode.String(buf.String())
 }
-
-/*
-  Validates the time_span_type field against a list of allowed words.
-*/
-func validateTimeSpanType(v interface{}, k string) (we []string, errors []error) {
-	value := v.(string)
-	if value != "relative" && value != "absolute" {
-		errors = append(errors, fmt.Errorf("%s not allowed; must be either relative or absolute", value))
-	}
-	return
-}

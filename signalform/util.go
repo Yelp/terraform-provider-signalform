@@ -36,3 +36,25 @@ func sendRequest(method string, url string, token string, payload []byte) (int, 
 
 	return resp.StatusCode, body, nil
 }
+
+/*
+  Validates the time_span_type field against a list of allowed words.
+*/
+func validateTimeSpanType(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if value != "relative" && value != "absolute" {
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either relative or absolute", value))
+	}
+	return
+}
+
+/*
+  Validates the plot_type field against a list of allowed words.
+*/
+func validatePlotTypeTimeChart(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if value != "LineChart" && value != "AreaChart" && value != "ColumnChart" && value != "Histogram" {
+		errors = append(errors, fmt.Errorf("%s not allowed; Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"", value))
+	}
+	return
+}
