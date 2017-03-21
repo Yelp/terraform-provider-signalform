@@ -5,12 +5,45 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
+	"math"
 	"strings"
 )
 
 func chartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"axis_left": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"min_value": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  math.MinInt32,
+						},
+						"max_value": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  math.MaxInt32,
+						},
+						"label": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"high_watermark": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  math.MaxInt32,
+						},
+						"low_watermark": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  math.MinInt32,
+						},
+					},
+				},
+			},
 			"synced": &schema.Schema{
 				Type:     schema.TypeInt,
 				Required: true,
@@ -31,10 +64,6 @@ func chartResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"chart_type": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"unit_prefix": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -47,12 +76,8 @@ func chartResource() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"stacked": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
 			"default_plot_type": &schema.Schema{
-				Type:     schema.TypeBool,
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"minimum_resolution": &schema.Schema{
@@ -62,9 +87,41 @@ func chartResource() *schema.Resource {
 			},
 			"max_delay": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 			},
 			"disable_sampling": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"time_span_type": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"time_range": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"start_time": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"end_time": &schema.Schema{
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"metric_property": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"display_metric_property": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"show_data_markers": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"show_line_data_markers": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
@@ -87,18 +144,72 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 		"programText": d.Get("programText").(string),
 	}
 
-	if viz := getVisualizationOptionsChart(d); len(viz) > 0 {
+	viz := getVisualizationOptionsChart(d)
+	//	if viz2 := getLineChartOptions(d); len(viz2) > 0 {
+	//		viz["fields"] = viz2
+	//	}
+	if axesOptions := getAxesOptions(d); len(axesOptions) > 0 {
+		viz["axes"] = axesOptions
+	}
+	if len(viz) > 0 {
 		payload["options"] = viz
 	}
 
-	return json.Marshal(payload)
+	a, e := json.Marshal(payload)
+	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
+	return a, e
+}
+
+func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
+	if tf_axis_opts, ok := d.GetOk("axis_left"); ok {
+		tf_left_axis_opts := tf_axis_opts.(*schema.Set).List()
+		axes_list_opts := make([]map[string]interface{}, len(tf_left_axis_opts))
+		for i, tf_opt := range tf_left_axis_opts {
+			tf_opt := tf_opt.(map[string]interface{})
+			item := make(map[string]interface{})
+
+			if val, ok := tf_opt["min_value"]; ok {
+				if val.(int) == math.MinInt32 {
+					item["min"] = nil
+				} else {
+					item["min"] = val.(int)
+				}
+			}
+			if val, ok := tf_opt["max_value"]; ok {
+				if val.(int) == math.MaxInt32 {
+					item["max"] = nil
+				} else {
+					item["max"] = val.(int)
+				}
+			}
+			if val, ok := tf_opt["label"]; ok {
+				item["label"] = val.(string)
+			}
+			if val, ok := tf_opt["high_watermark"]; ok {
+				if val.(int) == math.MaxInt32 {
+					item["highWatermark"] = nil
+				} else {
+					item["highWatermark"] = val.(int)
+				}
+			}
+			if val, ok := tf_opt["low_watermark"]; ok {
+				if val.(int) == math.MinInt32 {
+					item["lowWatermark"] = nil
+				} else {
+					item["lowWatermark"] = val.(int)
+				}
+			}
+
+			axes_list_opts[i] = item
+		}
+		return axes_list_opts
+	}
+	return nil
 }
 
 func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	viz := make(map[string]interface{})
-	if val, ok := d.GetOk("chart_type"); ok {
-		viz["type"] = val.(string)
-	}
+	viz["type"] = "TimeSeriesChart"
 	if val, ok := d.GetOk("unit_prefix"); ok {
 		viz["unitPrefix"] = val.(string)
 	}
@@ -134,55 +245,47 @@ func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{}
 		timeMap["type"] = val.(string)
 	}
 	if val, ok := d.GetOk("time_range"); ok {
-		timeMap["range"] = val.(int)
+		timeMap["range"] = val.(int) * 60 * 1000
 	}
 	if val, ok := d.GetOk("start_time"); ok {
-		timeMap["start"] = val.(int)
+		timeMap["start"] = val.(int) * 1000
 	}
 	if val, ok := d.GetOk("end_time"); ok {
-		timeMap["end"] = val.(int)
+		timeMap["end"] = val.(int) * 1000
 	}
 	if len(timeMap) > 0 {
 		viz["time"] = timeMap
 	}
 
-	axisOptions := make(map[string]interface{})
-	if val, ok := d.GetOk("min_value_axis"); ok {
-		axisOptions["min"] = val.(int)
-	}
-	if val, ok := d.GetOk("max_value_axis"); ok {
-		axisOptions["max"] = val.(int)
-	}
-	if val, ok := d.GetOk("label_axis"); ok {
-		axisOptions["label"] = val.(string)
-	}
-	if val, ok := d.GetOk("line_high_watermark"); ok {
-		axisOptions["highWatermark"] = val.(int)
-	}
-	if val, ok := d.GetOk("line_low_watermark"); ok {
-		axisOptions["lowWatermark"] = val.(int)
-	}
-	if len(timeMap) > 0 {
-		viz["axes"] = axisOptions
-	}
-
-	lineChartOptions := make(map[string]interface{})
+	legendOptions := make(map[string]interface{})
+	fields := make(map[string]interface{})
+	var _tmp1 [1]map[string]interface{}
 	if val, ok := d.GetOk("metric_property"); ok {
-		lineChartOptions["property"] = val.(string)
+		fields["property"] = val.(string)
 	}
 	if val, ok := d.GetOk("display_metric_property"); ok {
-		lineChartOptions["enabled"] = val.(bool)
+		fields["enabled"] = val.(bool)
 	}
-	if len(timeMap) > 0 {
-		viz["legendOptions"] = lineChartOptions
+	if len(fields) > 0 {
+		_tmp1[0] = fields
+		legendOptions["fields"] = _tmp1
+		viz["legendOptions"] = legendOptions
 	}
 
 	areaChartOptions := make(map[string]interface{})
-	if val, ok := d.GetOk("show_data_marker"); ok {
-		areaChartOptions["showDataMarkers"] = val.(string)
+	if val, ok := d.GetOk("show_data_markers"); ok {
+		areaChartOptions["showDataMarkers"] = val.(bool)
 	}
-	if len(timeMap) > 0 {
-		viz["areaChartOptions"] = lineChartOptions
+	if len(areaChartOptions) > 0 {
+		viz["areaChartOptions"] = areaChartOptions
+	}
+
+	lineChartOptions := make(map[string]interface{})
+	if val, ok := d.GetOk("show_line_data_markers"); ok {
+		lineChartOptions["showDataMarkers"] = val.(bool)
+	}
+	if len(areaChartOptions) > 0 {
+		viz["lineChartOptions"] = lineChartOptions
 	}
 	return viz
 }
