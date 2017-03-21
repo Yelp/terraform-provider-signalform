@@ -84,10 +84,10 @@ func TestGetNotifications(t *testing.T) {
 func TestResourceRuleHash(t *testing.T) {
 	// Tests basic and consistent hashing, keys in the maps are sorted
 	values := map[string]interface{}{
-		"description": "Test Rule Name",
-		"detectLabel": "Test Detect Label",
-		"severity":    "Critical",
-		"disabled":    "true",
+		"description":  "Test Rule Name",
+		"detect_label": "Test Detect Label",
+		"severity":     "Critical",
+		"disabled":     "true",
 	}
 
 	expected := hashcode.String("Test Rule Name-Critical-Test Detect Label-true-")
