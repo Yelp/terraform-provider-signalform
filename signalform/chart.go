@@ -30,7 +30,7 @@ func chartResource() *schema.Resource {
 				Optional:    true,
 				Description: "Description of the chart (Optional)",
 			},
-			"programText": &schema.Schema{
+			"program_text": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Signalflow program text for the chart. More info at \"https://developers.signalfx.com/docs/signalflow-overview\"",
@@ -187,7 +187,6 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 	}
 
 	a, e := json.Marshal(payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
 	return a, e
 }
 
@@ -337,7 +336,6 @@ func chartCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	status_code, resp_body, err := sendRequest("POST", url, config.SfxToken, payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate2", resp_body, 0644)
 	if status_code == 200 {
 		mapped_resp := map[string]interface{}{}
 		err = json.Unmarshal(resp_body, &mapped_resp)
