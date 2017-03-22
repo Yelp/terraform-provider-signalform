@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const DETECTOR_API_URL = "https://api.signalfx.com/v2/detector"
+
 func detectorResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -200,64 +202,21 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 	return notifications_list
 }
 
-/*
-  Fetches payload specified in terraform configuration and creates detector
-*/
 func detectorCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := config.ProviderEndpoint
 	payload, err := getPayloadDetector(d)
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 
-	status_code, resp_body, err := sendRequest("POST", url, config.SfxToken, payload)
-	if status_code == 200 {
-		mapped_resp := map[string]interface{}{}
-		err = json.Unmarshal(resp_body, &mapped_resp)
-		if err != nil {
-			return fmt.Errorf("Failed unmarshaling for detector %s during creation: %s", d.Get("name"), err.Error())
-		}
-		d.SetId(fmt.Sprintf("%s", mapped_resp["id"].(string)))
-		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
-	} else {
-		return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-	}
-	return nil
+	return resourceCreate(DETECTOR_API_URL, config.SfxToken, payload, d)
 }
 
-/*
-  Send a GET to get the current state of the detector.  It just checks if the lastUpdated timestamp is
-  later than the timestamp saved in the resource.  If so, the detector has been modified in some way
-  in the UI, and should be recreated.  This is signaled by setting synced to 0, meaning if synced is set to
-  1 in the tf configuration, it will update the detector to achieve the desired state.
-*/
 func detectorRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", DETECTOR_API_URL, d.Id())
 
-	status_code, resp_body, err := sendRequest("GET", url, config.SfxToken, nil)
-	if status_code == 200 {
-		mapped_resp := map[string]interface{}{}
-		err = json.Unmarshal(resp_body, &mapped_resp)
-		if err != nil {
-			return fmt.Errorf("Failed unmarshaling for detector %s during read: %s", d.Get("name"), err.Error())
-		}
-		// This implies the detector was modified in the Signalfx UI and therefore it is not synced with Signalform
-		last_updated := mapped_resp["lastUpdated"].(float64)
-		if last_updated > (d.Get("last_updated").(float64) + OFFSET) {
-			d.Set("synced", 0)
-			d.Set("last_updated", last_updated)
-		}
-	} else {
-		if strings.Contains(string(resp_body), "Detector not found") {
-			// This implies detector was deleted in the Signalfx UI and therefore we need to recreate it
-			d.SetId("")
-		} else {
-			return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-		}
-	}
-	return nil
+	return resourceRead(url, config.SfxToken, d)
 }
 
 func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -266,40 +225,16 @@ func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
-	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", DETECTOR_API_URL, d.Id())
 
-	status_code, resp_body, err := sendRequest("PUT", url, config.SfxToken, payload)
-	if status_code == 200 {
-		mapped_resp := map[string]interface{}{}
-		err = json.Unmarshal(resp_body, &mapped_resp)
-		if err != nil {
-			return fmt.Errorf("Failed unmarshaling for detector %s during creation: %s", d.Get("name"), err.Error())
-		}
-		// If the detector was updated successfully with Signalform configs, it is now synced with Signalfx
-		d.Set("synced", 1)
-		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
-	} else {
-		return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-	}
-	return nil
+	return resourceUpdate(url, config.SfxToken, payload, d)
 }
 
-/*
-  Deletes a detector.  If the detector does not exist, it will receive a 404, and carry on as usual.
-*/
 func detectorDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
-	status_code, resp_body, err := sendRequest("DELETE", url, config.SfxToken, nil)
-	if err != nil {
-		return fmt.Errorf("Failed deleting detector %s: %s", d.Get("name"), err.Error())
-	}
-	if status_code < 400 || status_code == 404 {
-		d.SetId("")
-	} else {
-		return fmt.Errorf("For Detector %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-	}
-	return nil
+	url := fmt.Sprintf("%s/%s", DETECTOR_API_URL, d.Id())
+
+	return resourceDelete(url, config.SfxToken, d)
 }
 
 /*

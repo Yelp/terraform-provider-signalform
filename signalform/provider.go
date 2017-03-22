@@ -12,8 +12,8 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{},
 		ResourcesMap: map[string]*schema.Resource{
-			"detector": detectorResource(),
-			"chart":    chartResource(),
+			"detector":             detectorResource(),
+			"signalform_timechart": timechartResource(),
 		},
 		ConfigureFunc: signalformConfigure,
 	}
@@ -33,6 +33,5 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 }
 
 type signalformConfig struct {
-	ProviderEndpoint string `json:"provider_endpoint"`
-	SfxToken         string `json:"sfx_token"`
+	SfxToken string `json:"sfx_token"`
 }

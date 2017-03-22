@@ -4,21 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"io/ioutil"
 	"math"
-	"strings"
 )
 
-func chartResource() *schema.Resource {
+const CHART_API_URL = "https://api.signalfx.com/v2/chart"
+
+func timechartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
 			},
 			"last_updated": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Latest timestamp the resource was updated",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -84,6 +86,9 @@ func chartResource() *schema.Resource {
 				Description:   "(type \"absolute\" only) Seconds since epoch to end the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
+			// TODO: Do the same for the axis_right as soon as signalfx relase the ability to
+			// choose visualitation options at a metric level (since you can enable the right
+			// axis at a metric level)
 			"axis_left": &schema.Schema{
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -121,7 +126,7 @@ func chartResource() *schema.Resource {
 					},
 				},
 			},
-			"properties_to_hide": &schema.Schema{
+			"legend_fields_to_hide": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -132,15 +137,10 @@ func chartResource() *schema.Resource {
 				Optional:    true,
 				Description: "(false by default) Whether vertical highlight lines should be drawn in the visualizations at times when events occurred",
 			},
-			"line_show_data_markers": &schema.Schema{
+			"show_data_markers": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "(false by default) Show markers (circles) for each datapoint used to draw line charts",
-			},
-			"area_show_data_markers": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "(false by default) Show markers (circles) for each datapoint used to draw area charts",
+				Description: "(false by default) Show markers (circles) for each datapoint used to draw line or area charts",
 			},
 			"stacked": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -165,17 +165,14 @@ func chartResource() *schema.Resource {
 /*
   Use Resource object to construct json payload in order to create a chart
 */
-func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
+func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
 		"name":        d.Get("name").(string),
 		"description": d.Get("description").(string),
-		"programText": d.Get("programText").(string),
+		"programText": d.Get("program_text").(string),
 	}
 
-	viz := getVisualizationOptionsChart(d)
-	//	if viz2 := getLineChartOptions(d); len(viz2) > 0 {
-	//		viz["fields"] = viz2
-	//	}
+	viz := getProgramOptionsChart(d)
 	if axesOptions := getAxesOptions(d); len(axesOptions) > 0 {
 		viz["axes"] = axesOptions
 	}
@@ -191,7 +188,7 @@ func getPayloadChart(d *schema.ResourceData) ([]byte, error) {
 }
 
 func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
-	if properties, ok := d.GetOk("properties_to_hide"); ok {
+	if properties, ok := d.GetOk("legend_fields_to_hide"); ok {
 		properties := properties.([]interface{})
 		legendOptions := make(map[string]interface{})
 		properties_opts := make([]map[string]interface{}, len(properties))
@@ -256,7 +253,7 @@ func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
 	return nil
 }
 
-func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{} {
+func getProgramOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	viz := make(map[string]interface{})
 	viz["type"] = "TimeSeriesChart"
 	if val, ok := d.GetOk("unit_prefix"); ok {
@@ -306,21 +303,23 @@ func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{}
 		viz["time"] = timeMap
 	}
 
-	areaChartOptions := make(map[string]interface{})
-	if val, ok := d.GetOk("area_show_data_markers"); ok {
-		areaChartOptions["showDataMarkers"] = val.(bool)
+	dataMarkersOption := make(map[string]interface{})
+	if val, ok := d.GetOk("show_data_markers"); ok {
+		dataMarkersOption["showDataMarkers"] = val.(bool)
 	}
-	if len(areaChartOptions) > 0 {
-		viz["areaChartOptions"] = areaChartOptions
+	if len(dataMarkersOption) > 0 {
+		if chartType, ok := d.GetOk("default_plot_type"); ok {
+			chartType := chartType.(string)
+			if chartType == "AreaChart" {
+				viz["areaChartOptions"] = dataMarkersOption
+			} else if chartType == "LineChart" {
+				viz["lineChartOptions"] = dataMarkersOption
+			}
+		} else {
+			viz["lineChartOptions"] = dataMarkersOption
+		}
 	}
 
-	lineChartOptions := make(map[string]interface{})
-	if val, ok := d.GetOk("line_show_data_markers"); ok {
-		lineChartOptions["showDataMarkers"] = val.(bool)
-	}
-	if len(lineChartOptions) > 0 {
-		viz["lineChartOptions"] = lineChartOptions
-	}
 	return viz
 }
 
@@ -329,83 +328,30 @@ func getVisualizationOptionsChart(d *schema.ResourceData) map[string]interface{}
 */
 func chartCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := config.ProviderEndpoint
-	payload, err := getPayloadChart(d)
+	payload, err := getPayloadTimeChart(d)
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 
-	status_code, resp_body, err := sendRequest("POST", url, config.SfxToken, payload)
-	if status_code == 200 {
-		mapped_resp := map[string]interface{}{}
-		err = json.Unmarshal(resp_body, &mapped_resp)
-		if err != nil {
-			return fmt.Errorf("Failed unmarshaling for chart %s during creation: %s", d.Get("name"), err.Error())
-		}
-		d.SetId(fmt.Sprintf("%s", mapped_resp["id"].(string)))
-		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
-	} else {
-		return fmt.Errorf("For chart %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-	}
-	return nil
+	return resourceCreate(CHART_API_URL, config.SfxToken, payload, d)
 }
 
-/*
-  Send a GET to get the current state of the chart.  It just checks if the lastUpdated timestamp is
-  later than the timestamp saved in the resource.  If so, the chart has been modified in some way
-  in the UI, and should be recreated.  This is signaled by setting synced to 0, meaning if synced is set to
-  1 in the tf configuration, it will update the chart to achieve the desired state.
-*/
 func chartRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 
-	status_code, resp_body, err := sendRequest("GET", url, config.SfxToken, nil)
-	if status_code == 200 {
-		mapped_resp := map[string]interface{}{}
-		err = json.Unmarshal(resp_body, &mapped_resp)
-		if err != nil {
-			return fmt.Errorf("Failed unmarshaling for chart %s during read: %s", d.Get("name"), err.Error())
-		}
-		// This implies the chart was modified in the Signalfx UI and therefore it is not synced with Signalform
-		last_updated := mapped_resp["lastUpdated"].(float64)
-		if last_updated > (d.Get("last_updated").(float64) + OFFSET) {
-			d.Set("synced", 0)
-			d.Set("last_updated", last_updated)
-		}
-	} else {
-		if strings.Contains(string(resp_body), "Chart not found") {
-			// This implies chart was deleted in the Signalfx UI and therefore we need to recreate it
-			d.SetId("")
-		} else {
-			return fmt.Errorf("For Chart %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-		}
-	}
-	return nil
+	return resourceRead(url, config.SfxToken, d)
 }
 
 func chartUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	payload, err := getPayloadChart(d)
+	payload, err := getPayloadTimeChart(d)
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
-	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
+	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 
-	status_code, resp_body, err := sendRequest("PUT", url, config.SfxToken, payload)
-	if status_code == 200 {
-		mapped_resp := map[string]interface{}{}
-		err = json.Unmarshal(resp_body, &mapped_resp)
-		if err != nil {
-			return fmt.Errorf("Failed unmarshaling for chart %s during creation: %s", d.Get("name"), err.Error())
-		}
-		// If the chart was updated successfully with Signalform configs, it is now synced with Signalfx
-		d.Set("synced", 1)
-		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
-	} else {
-		return fmt.Errorf("For Chart %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-	}
-	return nil
+	return resourceUpdate(url, config.SfxToken, payload, d)
 }
 
 /*
@@ -413,15 +359,17 @@ func chartUpdate(d *schema.ResourceData, meta interface{}) error {
 */
 func chartDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
-	url := fmt.Sprintf("%s/%s", config.ProviderEndpoint, d.Id())
-	status_code, resp_body, err := sendRequest("DELETE", url, config.SfxToken, nil)
-	if err != nil {
-		return fmt.Errorf("Failed deleting chart %s: %s", d.Get("name"), err.Error())
+	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
+	return resourceDelete(url, config.SfxToken, d)
+}
+
+/*
+  Validates the plot_type field against a list of allowed words.
+*/
+func validatePlotTypeTimeChart(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if value != "LineChart" && value != "AreaChart" && value != "ColumnChart" && value != "Histogram" {
+		errors = append(errors, fmt.Errorf("%s not allowed; Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"", value))
 	}
-	if status_code < 400 || status_code == 404 {
-		d.SetId("")
-	} else {
-		return fmt.Errorf("For Chart %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
-	}
-	return nil
+	return
 }
