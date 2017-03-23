@@ -31,11 +31,11 @@ func detectorResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"programText": &schema.Schema{
+			"program_text": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"maxDelay": &schema.Schema{
+			"max_delay": &schema.Schema{
 				Type:     schema.TypeFloat,
 				Optional: true,
 			},
@@ -87,7 +87,7 @@ func detectorResource() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"detectLabel": &schema.Schema{
+						"detect_label": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -122,7 +122,7 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 		item["description"] = tf_rule["description"].(string)
 		item["severity"] = tf_rule["severity"].(string)
-		item["detectLabel"] = tf_rule["detectLabel"].(string)
+		item["detectLabel"] = tf_rule["detect_label"].(string)
 		item["disabled"] = tf_rule["disabled"].(bool)
 
 		if notifications, ok := tf_rule["notifications"]; ok {
@@ -136,13 +136,13 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
 		"name":        d.Get("name").(string),
 		"description": d.Get("description").(string),
-		"programText": d.Get("programText").(string),
+		"programText": d.Get("program_text").(string),
 		"maxDelay":    nil,
 		"rules":       rules_list,
 	}
 
-	if _, ok := d.GetOk("maxDelay"); ok {
-		payload["maxDelay"] = int(d.Get("maxDelay").(float64))
+	if _, ok := d.GetOk("max_delay"); ok {
+		payload["maxDelay"] = int(d.Get("max_delay").(float64))
 	}
 
 	if viz := getVisualizationOptionsDetector(d); len(viz) > 0 {
@@ -245,7 +245,7 @@ func resourceRuleHash(v interface{}) int {
 	m := v.(map[string]interface{})
 	buf.WriteString(fmt.Sprintf("%s-", m["description"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["severity"]))
-	buf.WriteString(fmt.Sprintf("%s-", m["detectLabel"]))
+	buf.WriteString(fmt.Sprintf("%s-", m["detect_label"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["disabled"]))
 
 	// Sort the notifications so that we generate a consistent hash
