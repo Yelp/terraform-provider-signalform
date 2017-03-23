@@ -1,13 +1,9 @@
 package signalform
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestGetNotifications(t *testing.T) {
