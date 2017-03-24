@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"io/ioutil"
 )
 
 func textchartResource() *schema.Resource {
@@ -12,7 +11,7 @@ func textchartResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
 				Type:        schema.TypeInt,
-				Required:    true,
+				Computed:    true,
 				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
 			},
 			"last_updated": &schema.Schema{
@@ -58,10 +57,7 @@ func getPayloadTextChart(d *schema.ResourceData) ([]byte, error) {
 		payload["options"] = viz
 	}
 
-	a, e := json.Marshal(payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
-
-	return a, e
+	return json.Marshal(payload)
 }
 
 func getTextChartOptions(d *schema.ResourceData) map[string]interface{} {
