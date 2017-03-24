@@ -59,6 +59,7 @@ func heatmapchartResource() *schema.Resource {
 			"disable_sampling": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 				Description: "(false by default) If false, samples a subset of the output MTS, which improves UI performance",
 			},
 			"group_by": &schema.Schema{
@@ -75,6 +76,7 @@ func heatmapchartResource() *schema.Resource {
 			"is_ascending_sorted": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 				Description: "(true by default) \"Ascending\" or \"Descending\" sorting",
 			},
 			"color_range": &schema.Schema{
@@ -109,6 +111,7 @@ func heatmapchartResource() *schema.Resource {
 						"scale_inverted": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Default:     false,
 							Description: "(false by default) If false or omitted, values are red if they are above the highest specified value. If true, values are red if they are below the lowest specified value",
 						},
 					},
@@ -166,12 +169,8 @@ func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	if val, ok := d.GetOk("max_delay"); ok {
 		programOptions["maxDelay"] = val.(int)
 	}
-	if val, ok := d.GetOk("disable_sampling"); ok {
-		programOptions["disableSampling"] = val.(bool)
-	}
-	if len(programOptions) > 0 {
-		viz["programOptions"] = programOptions
-	}
+	programOptions["disableSampling"] = d.Get("disable_sampling").(bool)
+	viz["programOptions"] = programOptions
 
 	if groupByOptions, ok := d.GetOk("group_by"); ok {
 		viz["groupBy"] = groupByOptions.([]interface{})
@@ -181,13 +180,10 @@ func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 		viz["sortProperty"] = sortProperty.(string)
 	}
 
-	if isAscendingSorted, ok := d.GetOk("is_ascending_sorted"); ok {
-		a := isAscendingSorted.(bool)
-		if a {
-			viz["sortDirection"] = "Ascending"
-		} else {
-			viz["sortDirection"] = "Descending"
-		}
+	if d.Get("is_ascending_sorted").(bool) {
+		viz["sortDirection"] = "Ascending"
+	} else {
+		viz["sortDirection"] = "Descending"
 	}
 
 	viz["timestampHidden"] = d.Get("is_timestamp_hidden").(bool)
