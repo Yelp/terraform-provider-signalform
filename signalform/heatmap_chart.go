@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"io/ioutil"
 	"math"
 )
 
@@ -13,7 +12,7 @@ func heatmapchartResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
 				Type:        schema.TypeInt,
-				Required:    true,
+				Computed:    true,
 				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
 			},
 			"last_updated": &schema.Schema{
@@ -49,12 +48,12 @@ func heatmapchartResource() *schema.Resource {
 			"minimum_resolution": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The minimum resolution to use for computing the underlying program",
+				Description: "The minimum resolution (in seconds) to use for computing the underlying program",
 			},
 			"max_delay": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "How long to wait for late datapoints",
+				Description: "How long (in seconds) to wait for late datapoints",
 			},
 			"disable_sampling": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -147,9 +146,7 @@ func getPayloadHeatmapChart(d *schema.ResourceData) ([]byte, error) {
 		payload["options"] = viz
 	}
 
-	a, e := json.Marshal(payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
-	return a, e
+	return json.Marshal(payload)
 }
 
 func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
@@ -164,10 +161,10 @@ func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 
 	programOptions := make(map[string]interface{})
 	if val, ok := d.GetOk("minimum_resolution"); ok {
-		programOptions["minimumResolution"] = val.(int)
+		programOptions["minimumResolution"] = val.(int) * 1000
 	}
 	if val, ok := d.GetOk("max_delay"); ok {
-		programOptions["maxDelay"] = val.(int)
+		programOptions["maxDelay"] = val.(int) * 1000
 	}
 	programOptions["disableSampling"] = d.Get("disable_sampling").(bool)
 	viz["programOptions"] = programOptions
