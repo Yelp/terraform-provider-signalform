@@ -7,14 +7,12 @@ import (
 	"math"
 )
 
-const CHART_API_URL = "https://api.signalfx.com/v2/chart"
-
 func timechartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
 				Type:        schema.TypeInt,
-				Required:    true,
+				Computed:    true,
 				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
 			},
 			"last_updated": &schema.Schema{
@@ -50,12 +48,12 @@ func timechartResource() *schema.Resource {
 			"minimum_resolution": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The minimum resolution to use for computing the underlying program",
+				Description: "The minimum resolution (in seconds) to use for computing the underlying program",
 			},
 			"max_delay": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "How long to wait for late datapoints",
+				Description: "How long (in seconds) to wait for late datapoints",
 			},
 			"disable_sampling": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -127,7 +125,7 @@ func timechartResource() *schema.Resource {
 				},
 			},
 			"legend_fields_to_hide": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "List of properties that shouldn't be displayed in the chart legend (i.e. dimension names)",
@@ -140,11 +138,13 @@ func timechartResource() *schema.Resource {
 			"show_data_markers": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 				Description: "(false by default) Show markers (circles) for each datapoint used to draw line or area charts",
 			},
 			"stacked": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
 				Description: "(false by default) Whether area and bar charts in the visualization should be stacked",
 			},
 			"plot_type": &schema.Schema{
@@ -155,15 +155,15 @@ func timechartResource() *schema.Resource {
 			},
 		},
 
-		Create: chartCreate,
-		Read:   chartRead,
-		Update: chartUpdate,
-		Delete: chartDelete,
+		Create: timechartCreate,
+		Read:   timechartRead,
+		Update: timechartUpdate,
+		Delete: timechartDelete,
 	}
 }
 
 /*
-  Use Resource object to construct json payload in order to create a chart
+  Use Resource object to construct json payload in order to create a time chart
 */
 func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
@@ -172,7 +172,7 @@ func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 		"programText": d.Get("program_text").(string),
 	}
 
-	viz := getProgramOptionsChart(d)
+	viz := getTimeChartOptions(d)
 	if axesOptions := getAxesOptions(d); len(axesOptions) > 0 {
 		viz["axes"] = axesOptions
 	}
@@ -183,28 +183,7 @@ func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 		payload["options"] = viz
 	}
 
-	a, e := json.Marshal(payload)
-	return a, e
-}
-
-func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
-	if properties, ok := d.GetOk("legend_fields_to_hide"); ok {
-		properties := properties.([]interface{})
-		legendOptions := make(map[string]interface{})
-		properties_opts := make([]map[string]interface{}, len(properties))
-		for i, property := range properties {
-			property := property.(string)
-			item := make(map[string]interface{})
-			item["property"] = property
-			item["enabled"] = false
-			properties_opts[i] = item
-		}
-		if len(properties_opts) > 0 {
-			legendOptions["fields"] = properties_opts
-			return legendOptions
-		}
-	}
-	return nil
+	return json.Marshal(payload)
 }
 
 func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
@@ -253,7 +232,7 @@ func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
 	return nil
 }
 
-func getProgramOptionsChart(d *schema.ResourceData) map[string]interface{} {
+func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 	viz := make(map[string]interface{})
 	viz["type"] = "TimeSeriesChart"
 	if val, ok := d.GetOk("unit_prefix"); ok {
@@ -265,19 +244,17 @@ func getProgramOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	if val, ok := d.GetOk("show_event_lines"); ok {
 		viz["showEventLines"] = val.(bool)
 	}
-	if val, ok := d.GetOk("stacked"); ok {
-		viz["stacked"] = val.(bool)
-	}
-	if val, ok := d.GetOk("default_plot_type"); ok {
+	viz["stacked"] = d.Get("stacked").(bool)
+	if val, ok := d.GetOk("plot_type"); ok {
 		viz["defaultPlotType"] = val.(string)
 	}
 
 	programOptions := make(map[string]interface{})
 	if val, ok := d.GetOk("minimum_resolution"); ok {
-		programOptions["minimumResolution"] = val.(int)
+		programOptions["minimumResolution"] = val.(int) * 1000
 	}
 	if val, ok := d.GetOk("max_delay"); ok {
-		programOptions["maxDelay"] = val.(int)
+		programOptions["maxDelay"] = val.(int) * 1000
 	}
 	if val, ok := d.GetOk("disable_sampling"); ok {
 		programOptions["disableSampling"] = val.(bool)
@@ -304,29 +281,22 @@ func getProgramOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	}
 
 	dataMarkersOption := make(map[string]interface{})
-	if val, ok := d.GetOk("show_data_markers"); ok {
-		dataMarkersOption["showDataMarkers"] = val.(bool)
-	}
-	if len(dataMarkersOption) > 0 {
-		if chartType, ok := d.GetOk("default_plot_type"); ok {
-			chartType := chartType.(string)
-			if chartType == "AreaChart" {
-				viz["areaChartOptions"] = dataMarkersOption
-			} else if chartType == "LineChart" {
-				viz["lineChartOptions"] = dataMarkersOption
-			}
-		} else {
+	dataMarkersOption["showDataMarkers"] = d.Get("show_data_markers").(bool)
+	if chartType, ok := d.GetOk("plot_type"); ok {
+		chartType := chartType.(string)
+		if chartType == "AreaChart" {
+			viz["areaChartOptions"] = dataMarkersOption
+		} else if chartType == "LineChart" {
 			viz["lineChartOptions"] = dataMarkersOption
 		}
+	} else {
+		viz["lineChartOptions"] = dataMarkersOption
 	}
 
 	return viz
 }
 
-/*
-  Fetches payload specified in terraform configuration and creates chart
-*/
-func chartCreate(d *schema.ResourceData, meta interface{}) error {
+func timechartCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	payload, err := getPayloadTimeChart(d)
 	if err != nil {
@@ -336,14 +306,14 @@ func chartCreate(d *schema.ResourceData, meta interface{}) error {
 	return resourceCreate(CHART_API_URL, config.SfxToken, payload, d)
 }
 
-func chartRead(d *schema.ResourceData, meta interface{}) error {
+func timechartRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 
 	return resourceRead(url, config.SfxToken, d)
 }
 
-func chartUpdate(d *schema.ResourceData, meta interface{}) error {
+func timechartUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	payload, err := getPayloadTimeChart(d)
 	if err != nil {
@@ -354,10 +324,7 @@ func chartUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceUpdate(url, config.SfxToken, payload, d)
 }
 
-/*
-  Deletes a chart.  If the chart does not exist, it will receive a 404, and carry on as usual.
-*/
-func chartDelete(d *schema.ResourceData, meta interface{}) error {
+func timechartDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 	return resourceDelete(url, config.SfxToken, d)
