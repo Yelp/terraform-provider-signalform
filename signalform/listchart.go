@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"io/ioutil"
 )
 
 func listchartResource() *schema.Resource {
@@ -12,7 +11,7 @@ func listchartResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
 				Type:        schema.TypeInt,
-				Required:    true,
+				Computed:    true,
 				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
 			},
 			"last_updated": &schema.Schema{
@@ -66,7 +65,7 @@ func listchartResource() *schema.Resource {
 				Description: "How often (in seconds) to refresh the values of the list",
 			},
 			"legend_fields_to_hide": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "List of properties that shouldn't be displayed in the chart legend (i.e. dimension names)",
@@ -86,7 +85,7 @@ func listchartResource() *schema.Resource {
 }
 
 /*
-  Use Resource object to construct json payload in order to create a single value chart
+  Use Resource object to construct json payload in order to create a list chart
 */
 func getPayloadListChart(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
@@ -103,10 +102,7 @@ func getPayloadListChart(d *schema.ResourceData) ([]byte, error) {
 		payload["options"] = viz
 	}
 
-	a, e := json.Marshal(payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
-
-	return a, e
+	return json.Marshal(payload)
 }
 
 func getListChartOptions(d *schema.ResourceData) map[string]interface{} {
@@ -170,5 +166,6 @@ func listchartUpdate(d *schema.ResourceData, meta interface{}) error {
 func listchartDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
+
 	return resourceDelete(url, config.SfxToken, d)
 }

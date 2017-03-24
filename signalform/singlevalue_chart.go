@@ -11,7 +11,7 @@ func singlevaluechartResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
 				Type:        schema.TypeInt,
-				Required:    true,
+				Computed:    true,
 				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
 			},
 			"last_updated": &schema.Schema{
