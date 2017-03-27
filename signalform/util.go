@@ -12,7 +12,8 @@ import (
 
 const (
 	// Workaround for Signalfx bug related to post processing and lastUpdatedTime
-	OFFSET = 10000.0
+	OFFSET        = 10000.0
+	CHART_API_URL = "https://api.signalfx.com/v2/chart"
 )
 
 /*
@@ -96,6 +97,7 @@ func resourceCreate(url string, sfxToken string, payload []byte, d *schema.Resou
 		}
 		d.SetId(fmt.Sprintf("%s", mapped_resp["id"].(string)))
 		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
+		d.Set("synced", 1)
 	} else {
 		return fmt.Errorf("For the resource %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 	}
@@ -134,6 +136,29 @@ func resourceDelete(url string, sfxToken string, d *schema.ResourceData) error {
 		d.SetId("")
 	} else {
 		return fmt.Errorf("For the resource  %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
+	}
+	return nil
+}
+
+/*
+	Util method to get Legend Chart Options.
+*/
+func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
+	if properties, ok := d.GetOk("legend_fields_to_hide"); ok {
+		properties := properties.(*schema.Set).List()
+		legendOptions := make(map[string]interface{})
+		properties_opts := make([]map[string]interface{}, len(properties))
+		for i, property := range properties {
+			property := property.(string)
+			item := make(map[string]interface{})
+			item["property"] = property
+			item["enabled"] = false
+			properties_opts[i] = item
+		}
+		if len(properties_opts) > 0 {
+			legendOptions["fields"] = properties_opts
+			return legendOptions
+		}
 	}
 	return nil
 }

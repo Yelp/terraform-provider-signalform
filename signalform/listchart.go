@@ -1,0 +1,171 @@
+package signalform
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/hashicorp/terraform/helper/schema"
+)
+
+func listchartResource() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"synced": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
+			},
+			"last_updated": &schema.Schema{
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Latest timestamp the resource was updated",
+			},
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the chart",
+			},
+			"description": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the chart (Optional)",
+			},
+			"program_text": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Signalflow program text for the chart. More info at \"https://developers.signalfx.com/docs/signalflow-overview\"",
+			},
+			"unit_prefix": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "(Metric by default) Must be \"Metric\" or \"Binary\"",
+			},
+			"color_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "(Metric by default) Must be \"Metric\" or \"Dimension\"",
+			},
+			"max_delay": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "How long (in seconds) to wait for late datapoints",
+			},
+			"disable_sampling": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "(false by default) If false, samples a subset of the output MTS, which improves UI performance",
+			},
+			"sort_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A property of the metric time series to sort by",
+			},
+			"refresh_interval": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "How often (in seconds) to refresh the values of the list",
+			},
+			"legend_fields_to_hide": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "List of properties that shouldn't be displayed in the chart legend (i.e. dimension names)",
+			},
+			"max_precision": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The maximum precision to for values displayed in the list",
+			},
+		},
+
+		Create: listchartCreate,
+		Read:   listchartRead,
+		Update: listchartUpdate,
+		Delete: listchartDelete,
+	}
+}
+
+/*
+  Use Resource object to construct json payload in order to create a list chart
+*/
+func getPayloadListChart(d *schema.ResourceData) ([]byte, error) {
+	payload := map[string]interface{}{
+		"name":        d.Get("name").(string),
+		"description": d.Get("description").(string),
+		"programText": d.Get("program_text").(string),
+	}
+
+	viz := getListChartOptions(d)
+	if legendOptions := getLegendOptions(d); len(legendOptions) > 0 {
+		viz["legendOptions"] = legendOptions
+	}
+	if len(viz) > 0 {
+		payload["options"] = viz
+	}
+
+	return json.Marshal(payload)
+}
+
+func getListChartOptions(d *schema.ResourceData) map[string]interface{} {
+	viz := make(map[string]interface{})
+	viz["type"] = "List"
+	if val, ok := d.GetOk("unit_prefix"); ok {
+		viz["unitPrefix"] = val.(string)
+	}
+	if val, ok := d.GetOk("color_by"); ok {
+		viz["colorBy"] = val.(string)
+	}
+
+	programOptions := make(map[string]interface{})
+	if val, ok := d.GetOk("max_delay"); ok {
+		programOptions["maxDelay"] = val.(int) * 1000
+	}
+	programOptions["disableSampling"] = d.Get("disable_sampling").(bool)
+	viz["programOptions"] = programOptions
+
+	if sortBy, ok := d.GetOk("sort_by"); ok {
+		viz["sortBy"] = sortBy.(string)
+	}
+	if refreshInterval, ok := d.GetOk("refresh_interval"); ok {
+		viz["refreshInterval"] = refreshInterval.(int) * 1000
+	}
+	if maxPrecision, ok := d.GetOk("max_precision"); ok {
+		viz["maximumPrecision"] = maxPrecision.(int)
+	}
+
+	return viz
+}
+
+func listchartCreate(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*signalformConfig)
+	payload, err := getPayloadListChart(d)
+	if err != nil {
+		return fmt.Errorf("Failed creating json payload: %s", err.Error())
+	}
+
+	return resourceCreate(CHART_API_URL, config.SfxToken, payload, d)
+}
+
+func listchartRead(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*signalformConfig)
+	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
+
+	return resourceRead(url, config.SfxToken, d)
+}
+
+func listchartUpdate(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*signalformConfig)
+	payload, err := getPayloadListChart(d)
+	if err != nil {
+		return fmt.Errorf("Failed creating json payload: %s", err.Error())
+	}
+	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
+
+	return resourceUpdate(url, config.SfxToken, payload, d)
+}
+
+func listchartDelete(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*signalformConfig)
+	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
+
+	return resourceDelete(url, config.SfxToken, d)
+}
