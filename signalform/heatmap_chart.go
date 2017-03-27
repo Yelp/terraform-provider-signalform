@@ -72,11 +72,10 @@ func heatmapchartResource() *schema.Resource {
 				Optional:    true,
 				Description: "The property to use when sorting the elements",
 			},
-			"is_ascending_sorted": &schema.Schema{
-				Type:        schema.TypeBool,
+			"sorting": &schema.Schema{
+				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     true,
-				Description: "(true by default) \"Ascending\" or \"Descending\" sorting",
+				Description: "(Ascending by default) Must be \"Ascending\" or \"Descending\"",
 			},
 			"color_range": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -116,7 +115,7 @@ func heatmapchartResource() *schema.Resource {
 					},
 				},
 			},
-			"is_timestamp_hidden": &schema.Schema{
+			"hide_timestamp": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -177,13 +176,11 @@ func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 		viz["sortProperty"] = sortProperty.(string)
 	}
 
-	if d.Get("is_ascending_sorted").(bool) {
-		viz["sortDirection"] = "Ascending"
-	} else {
-		viz["sortDirection"] = "Descending"
+	if sortingType, ok := d.GetOk("sorting"); ok {
+		viz["sortDirection"] = sortingType.(string)
 	}
 
-	viz["timestampHidden"] = d.Get("is_timestamp_hidden").(bool)
+	viz["timestampHidden"] = d.Get("hide_timestamp").(bool)
 
 	return viz
 }

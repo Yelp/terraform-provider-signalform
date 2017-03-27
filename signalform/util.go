@@ -141,7 +141,7 @@ func resourceDelete(url string, sfxToken string, d *schema.ResourceData) error {
 }
 
 /*
-	Util method to get Legend  Chart Options.
+	Util method to get Legend Chart Options.
 */
 func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
 	if properties, ok := d.GetOk("legend_fields_to_hide"); ok {

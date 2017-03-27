@@ -32,7 +32,7 @@ func textchartResource() *schema.Resource {
 			"markdown": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Markdown text to display. More info at: \"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet\"",
+				Description: "Markdown text to display. More info at: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet",
 			},
 		},
 
