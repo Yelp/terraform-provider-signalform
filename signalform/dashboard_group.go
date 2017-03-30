@@ -32,12 +32,6 @@ func dashboardgroupResource() *schema.Resource {
 				Optional:    true,
 				Description: "Description of the dashboard group",
 			},
-			"dashboards": &schema.Schema{
-				Type:        schema.TypeSet,
-				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of Dashboards that are a part of the dashboard group",
-			},
 		},
 
 		Create: dashboardgroupCreate,
@@ -54,7 +48,7 @@ func getPayloadDashboardGroup(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
 		"name":        d.Get("name").(string),
 		"description": d.Get("description").(string),
-		"dashboards":  d.Get("dashboards").(*schema.Set).List(),
+		"dashboards":  make([]string, 0),
 	}
 
 	a, e := json.Marshal(payload)
