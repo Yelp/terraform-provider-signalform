@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"io/ioutil"
 )
 
 const DASHBOARD_API_URL = "https://api.signalfx.com/v2/dashboard"
