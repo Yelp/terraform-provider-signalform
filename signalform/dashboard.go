@@ -69,12 +69,14 @@ func dashboardResource() *schema.Resource {
 						},
 						"width": &schema.Schema{
 							Type:        schema.TypeInt,
-							Required:    true,
+							Optional:    true,
+							Default:     12,
 							Description: "How many columns (out of a total of 12) the chart should take up. (between 1 and 12)",
 						},
 						"height": &schema.Schema{
 							Type:        schema.TypeInt,
-							Required:    true,
+							Optional:    true,
+							Default:     1,
 							Description: "How many rows the chart should take up. (greater than or equal to 1)",
 						},
 					},
