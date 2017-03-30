@@ -48,7 +48,8 @@ func getPayloadDashboardGroup(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
 		"name":        d.Get("name").(string),
 		"description": d.Get("description").(string),
-		"dashboards":  make([]string, 0),
+		// We are not keeping track of this because it's already done in the dashboard resource.
+		"dashboards": make([]string, 0),
 	}
 
 	a, e := json.Marshal(payload)
