@@ -30,7 +30,7 @@ func dashboardResource() *schema.Resource {
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Description of the chart (Optional)",
+				Description: "Description of the dashboard (Optional)",
 			},
 			"dashboard_group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -142,7 +142,7 @@ func dashboardResource() *schema.Resource {
 }
 
 /*
-  Use Resource object to construct json payload in order to create a time chart
+  Use Resource object to construct json payload in order to create a dashboard
 */
 func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 	payload := map[string]interface{}{
@@ -169,9 +169,7 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 		payload["charts"] = charts
 	}
 
-	a, e := json.Marshal(payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
-	return a, e
+	return json.Marshal(payload)
 }
 
 func getDashboardTime(d *schema.ResourceData) map[string]interface{} {
