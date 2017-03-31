@@ -12,7 +12,7 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{},
 		ResourcesMap: map[string]*schema.Resource{
-			"detector":                    detectorResource(),
+			"signalform_detector":         detectorResource(),
 			"signalform_timechart":        timechartResource(),
 			"signalform_heatmapchart":     heatmapchartResource(),
 			"signalform_singlevaluechart": singlevaluechartResource(),
