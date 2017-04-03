@@ -85,22 +85,27 @@ func detectorResource() *schema.Resource {
 							Description: "Description of the rule",
 						},
 						"notifications": &schema.Schema{
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Determines where notifications will be sent when an incident occurs. See https://developers.signalfx.com/v2/docs/detector-model#notifications-models for more info",
 						},
 						"severity": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validateSeverity,
+							Description:  "The severity of the rule, must be one of: Critical, Warning, Major, Minor, Info",
 						},
 						"detect_label": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A detect label which matches a detect label within the program text",
 						},
 						"disabled": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "(default: false) When true, notifications and events will not be generated for the detect label",
 						},
 					},
 				},
@@ -196,7 +201,7 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 		if vars[0] == "Email" {
 			item["email"] = vars[1]
 		} else if vars[0] == "PagerDuty" {
-			item["credentialId"] = vars[1]
+			item["credential_id"] = vars[1]
 		} else if vars[0] == "Webhook" {
 			item["secret"] = vars[1]
 			item["url"] = vars[2]
@@ -269,4 +274,19 @@ func resourceRuleHash(v interface{}) int {
 	}
 
 	return hashcode.String(buf.String())
+}
+
+/*
+  Validates the severity field against a list of allowed words.
+*/
+func validateSeverity(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	allowedWords := map[string]bool{"Critical", "Warning", "Major", "Minor", "Info"}
+	for _, word := range allowedWords {
+		if value == word {
+			return
+		}
+	}
+	errors = append(errors, fmt.Errorf("%s not allowed; must be one of: %s", value, string.Join(allowedWords, ", ")))
+	return
 }

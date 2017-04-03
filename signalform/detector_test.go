@@ -19,8 +19,8 @@ func TestGetNotifications(t *testing.T) {
 			"email": "test@yelp.com",
 		},
 		map[string]interface{}{
-			"type":         "PagerDuty",
-			"credentialId": "credId",
+			"type":          "PagerDuty",
+			"credential_id": "credId",
 		},
 		map[string]interface{}{
 			"type":   "Webhook",
@@ -42,4 +42,14 @@ func TestResourceRuleHash(t *testing.T) {
 
 	expected := hashcode.String("Test Rule Name-Critical-Test Detect Label-true-")
 	assert.Equal(t, expected, resourceRuleHash(values))
+}
+
+func TestValidateSeverityAllowed(t *testing.T) {
+	_, errors := validateSeverity("Critical", "severity")
+	assert.Equal(t, len(errors), 0)
+}
+
+func TestValidateSeverityNotAllowed(t *testing.T) {
+	_, errors := validateSeverity("foo", "severity")
+	assert.Equal(t, len(errors), 1)
 }
