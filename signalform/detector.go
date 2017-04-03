@@ -281,12 +281,12 @@ func resourceRuleHash(v interface{}) int {
 */
 func validateSeverity(v interface{}, k string) (we []string, errors []error) {
 	value := v.(string)
-	allowedWords := map[string]bool{"Critical", "Warning", "Major", "Minor", "Info"}
+	allowedWords := []string{"Critical", "Warning", "Major", "Minor", "Info"}
 	for _, word := range allowedWords {
 		if value == word {
 			return
 		}
 	}
-	errors = append(errors, fmt.Errorf("%s not allowed; must be one of: %s", value, string.Join(allowedWords, ", ")))
+	errors = append(errors, fmt.Errorf("%s not allowed; must be one of: %s", value, strings.Join(allowedWords, ", ")))
 	return
 }
