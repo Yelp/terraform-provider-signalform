@@ -7,7 +7,7 @@ import (
 	"math"
 )
 
-func timechartResource() *schema.Resource {
+func timeChartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{

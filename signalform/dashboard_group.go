@@ -9,7 +9,7 @@ import (
 
 const DASHBOARD_GROUP_API_URL = "https://api.signalfx.com/v2/dashboardgroup"
 
-func dashboardgroupResource() *schema.Resource {
+func dashboardGroupResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{

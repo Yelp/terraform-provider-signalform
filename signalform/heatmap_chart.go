@@ -7,7 +7,7 @@ import (
 	"math"
 )
 
-func heatmapchartResource() *schema.Resource {
+func heatmapChartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
