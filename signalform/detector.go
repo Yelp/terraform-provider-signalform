@@ -20,24 +20,29 @@ func detectorResource() *schema.Resource {
 				Required: true,
 			},
 			"last_updated": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Computed:    true,
+				Description: "Latest timestamp the resource was updated",
 			},
 			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the detector",
 			},
 			"description": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the detector",
 			},
 			"program_text": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Signalflow program text for the detector. More info at \"https://developers.signalfx.com/docs/signalflow-overview\"",
 			},
 			"max_delay": &schema.Schema{
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "How long (in seconds) to wait for late datapoints",
 			},
 			"show_data_markers": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -75,8 +80,9 @@ func detectorResource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"description": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Description of the rule",
 						},
 						"notifications": &schema.Schema{
 							Type:     schema.TypeList,
@@ -141,8 +147,8 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 		"rules":       rules_list,
 	}
 
-	if _, ok := d.GetOk("max_delay"); ok {
-		payload["maxDelay"] = int(d.Get("max_delay").(float64))
+	if val, ok := d.GetOk("max_delay"); ok {
+		payload["maxDelay"] = val.(int) * 1000
 	}
 
 	if viz := getVisualizationOptionsDetector(d); len(viz) > 0 {
