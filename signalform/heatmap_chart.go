@@ -12,7 +12,7 @@ func heatmapChartResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
 				Default:     true,
 				Description: "Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing.",
 			},
