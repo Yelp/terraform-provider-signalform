@@ -28,7 +28,7 @@ func timechartResource() *schema.Resource {
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Description of the chart (Optional)",
+				Description: "Description of the chart",
 			},
 			"program_text": &schema.Schema{
 				Type:        schema.TypeString,
