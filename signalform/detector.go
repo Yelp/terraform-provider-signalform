@@ -203,7 +203,7 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 		if vars[0] == "Email" {
 			item["email"] = vars[1]
 		} else if vars[0] == "PagerDuty" {
-			item["credential_id"] = vars[1]
+			item["credentialId"] = vars[1]
 		} else if vars[0] == "Webhook" {
 			item["secret"] = vars[1]
 			item["url"] = vars[2]

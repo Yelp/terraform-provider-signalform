@@ -19,8 +19,8 @@ func TestGetNotifications(t *testing.T) {
 			"email": "test@yelp.com",
 		},
 		map[string]interface{}{
-			"type":          "PagerDuty",
-			"credential_id": "credId",
+			"type":         "PagerDuty",
+			"credentialId": "credId",
 		},
 		map[string]interface{}{
 			"type":   "Webhook",
