@@ -7,13 +7,14 @@ import (
 	"math"
 )
 
-func heatmapchartResource() *schema.Resource {
+func heatmapChartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"synced": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Setting synced to 1 implies that the detector in SignalForm and SignalFx are identical",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing.",
 			},
 			"last_updated": &schema.Schema{
 				Type:        schema.TypeFloat,

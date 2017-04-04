@@ -12,14 +12,14 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{},
 		ResourcesMap: map[string]*schema.Resource{
-			"signalform_detector":         detectorResource(),
-			"signalform_timechart":        timechartResource(),
-			"signalform_heatmapchart":     heatmapchartResource(),
-			"signalform_singlevaluechart": singlevaluechartResource(),
-			"signalform_listchart":        listchartResource(),
-			"signalform_textchart":        textchartResource(),
-			"signalform_dashboard":        dashboardResource(),
-			"signalform_dashboardgroup":   dashboardgroupResource(),
+			"signalform_detector":           detectorResource(),
+			"signalform_time_chart":         timeChartResource(),
+			"signalform_heatmap_chart":      heatmapChartResource(),
+			"signalform_single_value_chart": singleValueChartResource(),
+			"signalform_list_chart":         listChartResource(),
+			"signalform_text_chart":         textChartResource(),
+			"signalform_dashboard":          dashboardResource(),
+			"signalform_dashboard_group":    dashboardGroupResource(),
 		},
 		ConfigureFunc: signalformConfigure,
 	}
