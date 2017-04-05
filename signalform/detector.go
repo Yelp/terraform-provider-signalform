@@ -56,7 +56,7 @@ func detectorResource() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateTimeSpanType,
-				Description:  "The type of time span defined for visualization. Must be either \"relative\" or \"absoulte\".",
+				Description:  "The type of time span defined for visualization. Must be either \"relative\" or \"absolute\".",
 			},
 			"time_range": &schema.Schema{
 				Type:          schema.TypeInt,
@@ -77,8 +77,9 @@ func detectorResource() *schema.Resource {
 				Description:   "Milliseconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
 			},
 			"rule": &schema.Schema{
-				Type:     schema.TypeSet,
-				Required: true,
+				Type:        schema.TypeSet,
+				Required:    true,
+				Description: "Set of rules used for alerting",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"description": &schema.Schema{
@@ -90,7 +91,7 @@ func detectorResource() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Determines where notifications will be sent when an incident occurs. See https://developers.signalfx.com/v2/docs/detector-model#notifications-models for more info",
+							Description: "List of strings specifying where notifications will be sent when an incident occurs. See https://developers.signalfx.com/v2/docs/detector-model#notifications-models for more info",
 						},
 						"severity": &schema.Schema{
 							Type:         schema.TypeString,
