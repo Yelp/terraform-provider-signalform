@@ -57,15 +57,75 @@ func TestSendRequestTimeout(t *testing.T) {
 
 func TestValidateTimeSpanTypeAbsolute(t *testing.T) {
 	_, errors := validateTimeSpanType("absolute", "time_span_type")
-	assert.Equal(t, len(errors), 0)
+	assert.Equal(t, 0, len(errors))
 }
 
 func TestValidateTimeSpanTypeRelative(t *testing.T) {
 	_, errors := validateTimeSpanType("relative", "time_span_type")
-	assert.Equal(t, len(errors), 0)
+	assert.Equal(t, 0, len(errors))
 }
 
 func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
 	_, errors := validateTimeSpanType("foo", "time_span_type")
-	assert.Equal(t, len(errors), 1)
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestValidateTimeEpoch(t *testing.T) {
+	_, errors := validateTime("621129601", "time_start")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeSecondsNotAllowed(t *testing.T) {
+	_, errors := validateTime("621129", "time_start")
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestValidateTimeStringSeconds(t *testing.T) {
+	_, errors := validateTime("-5s", "time_start")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeStringMinutes(t *testing.T) {
+	_, errors := validateTime("-15m", "time_start")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeStringHours(t *testing.T) {
+	_, errors := validateTime("-5h", "time_start")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeStringDays(t *testing.T) {
+	_, errors := validateTime("-50d", "time_start")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeStringWeeks(t *testing.T) {
+	_, errors := validateTime("-5w", "time_start")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeStringEnd(t *testing.T) {
+	_, errors := validateTime("-5d", "time_end")
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestValidateTimeNowEnd(t *testing.T) {
+	_, errors := validateTime("Now", "time_end")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateTimeNowStart(t *testing.T) {
+	_, errors := validateTime("Now", "time_start")
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestValidateTimeStringMonthsNotAllowed(t *testing.T) {
+	_, errors := validateTime("-5M", "time_start")
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestValidateTimeStringNotAllowed(t *testing.T) {
+	_, errors := validateTime("foo", "time_start")
+	assert.Equal(t, 1, len(errors))
 }

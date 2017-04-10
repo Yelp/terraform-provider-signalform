@@ -38,14 +38,16 @@ func dashboardResource() *schema.Resource {
 				Description: "The ID of the dashboard group that contains the dashboard. If an ID is not provided during creation, the dashboard will be placed in a newly created dashboard group",
 			},
 			"time_start": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Seconds since epoch to start displaying data",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateTime,
+				Description:  "From when to display data. Either milliseconds since epoch or SignalFx time syntax (e.g. -5m, -1h)",
 			},
 			"time_end": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Seconds since epoch to end displaying data",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateTime,
+				Description:  "Until when to display data. Either milliseconds since epoch or Now, in case you are using relative time",
 			},
 			"chart": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -177,10 +179,10 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 func getDashboardTime(d *schema.ResourceData) map[string]interface{} {
 	time := make(map[string]interface{})
 	if val, ok := d.GetOk("time_start"); ok {
-		time["start"] = val.(int) * 1000
+		time["start"] = val.(string)
 	}
 	if val, ok := d.GetOk("time_end"); ok {
-		time["end"] = val.(int) * 1000
+		time["end"] = val.(string)
 	}
 	if len(time) > 0 {
 		return time

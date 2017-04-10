@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -161,4 +163,35 @@ func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
 		}
 	}
 	return nil
+}
+
+/*
+	Util method to validate time either in milliseconds since epoch or SignalFx specific string format.
+*/
+func validateTime(v interface{}, k string) (we []string, errors []error) {
+	ts := v.(string)
+
+	// Try to guess if time is in milliseconds since epoch
+	ms, err := strconv.Atoi(ts)
+	if err == nil {
+		if ms < 621129600 {
+			errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or SignalFx time syntax (e.g. -5m, -1h, Now)", ts))
+		}
+		return
+	}
+
+	// If it's the end time, it can only be ms since epoch or now
+	if k == "time_end" {
+		if ts != "Now" {
+			errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or Now", ts))
+		}
+		return
+	}
+
+	// If it's the start time, it can only be ms since epoch or SignalFx time syntax, but not Now
+	r, _ := regexp.Compile("-([0-9]+)[smhdw]")
+	if !r.MatchString(ts) {
+		errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or SignalFx time syntax (e.g. -5m, -1h)", ts))
+	}
+	return
 }
