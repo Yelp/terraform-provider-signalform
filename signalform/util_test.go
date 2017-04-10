@@ -70,62 +70,18 @@ func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
 	assert.Equal(t, 1, len(errors))
 }
 
-func TestValidateTimeEpoch(t *testing.T) {
-	_, errors := validateTime("621129601", "time_start")
+func TestValidateSignalfxRelativeTime(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5d", "time_range")
 	assert.Equal(t, 0, len(errors))
 }
 
-func TestValidateTimeSecondsNotAllowed(t *testing.T) {
-	_, errors := validateTime("621129", "time_start")
+func TestValidateSignalfxRelativeTimeNotAllowed(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5M", "time_range")
 	assert.Equal(t, 1, len(errors))
 }
 
-func TestValidateTimeStringSeconds(t *testing.T) {
-	_, errors := validateTime("-5s", "time_start")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeStringMinutes(t *testing.T) {
-	_, errors := validateTime("-15m", "time_start")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeStringHours(t *testing.T) {
-	_, errors := validateTime("-5h", "time_start")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeStringDays(t *testing.T) {
-	_, errors := validateTime("-50d", "time_start")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeStringWeeks(t *testing.T) {
-	_, errors := validateTime("-5w", "time_start")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeStringEnd(t *testing.T) {
-	_, errors := validateTime("-5d", "time_end")
-	assert.Equal(t, 1, len(errors))
-}
-
-func TestValidateTimeNowEnd(t *testing.T) {
-	_, errors := validateTime("Now", "time_end")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeNowStart(t *testing.T) {
-	_, errors := validateTime("Now", "time_start")
-	assert.Equal(t, 1, len(errors))
-}
-
-func TestValidateTimeStringMonthsNotAllowed(t *testing.T) {
-	_, errors := validateTime("-5M", "time_start")
-	assert.Equal(t, 1, len(errors))
-}
-
-func TestValidateTimeStringNotAllowed(t *testing.T) {
-	_, errors := validateTime("foo", "time_start")
-	assert.Equal(t, 1, len(errors))
+func TestConversionSignalfxrealtiveTimeIntoMs(t *testing.T) {
+	ms, err := fromRangeToMilliSeconds("-15m")
+	assert.Equal(t, 900000, ms)
+	assert.Nil(t, err)
 }

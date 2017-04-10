@@ -166,32 +166,40 @@ func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
 }
 
 /*
-	Util method to validate time either in milliseconds since epoch or SignalFx specific string format.
+	Util method to validate SignalFx specific string format.
 */
-func validateTime(v interface{}, k string) (we []string, errors []error) {
+func validateSignalfxRelativeTime(v interface{}, k string) (we []string, errors []error) {
 	ts := v.(string)
 
-	// Try to guess if time is in milliseconds since epoch
-	ms, err := strconv.Atoi(ts)
-	if err == nil {
-		if ms < 621129600 {
-			errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or SignalFx time syntax (e.g. -5m, -1h, Now)", ts))
-		}
-		return
-	}
-
-	// If it's the end time, it can only be ms since epoch or now
-	if k == "time_end" {
-		if ts != "Now" {
-			errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or Now", ts))
-		}
-		return
-	}
-
-	// If it's the start time, it can only be ms since epoch or SignalFx time syntax, but not Now
-	r, _ := regexp.Compile("-([0-9]+)[smhdw]")
+	r, _ := regexp.Compile("-([0-9]+)[mhdw]")
 	if !r.MatchString(ts) {
 		errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or SignalFx time syntax (e.g. -5m, -1h)", ts))
 	}
 	return
+}
+
+/*
+*  Util method to convert from Signalfx string format to milliseconds
+ */
+func fromRangeToMilliSeconds(timeRange string) (int, error) {
+	r := regexp.MustCompile("-([0-9]+)([mhdw])")
+	ss := r.FindStringSubmatch(timeRange)
+	var c int
+	switch ss[2] {
+	case "m":
+		c = 60 * 1000
+	case "h":
+		c = 60 * 60 * 1000
+	case "d":
+		c = 24 * 60 * 60 * 1000
+	case "w":
+		c = 7 * 24 * 60 * 60 * 1000
+	default:
+		c = 1
+	}
+	val, err := strconv.Atoi(ss[1])
+	if err != nil {
+		return -1, err
+	}
+	return val * c, nil
 }
