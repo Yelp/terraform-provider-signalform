@@ -69,3 +69,18 @@ func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
 	_, errors := validateTimeSpanType("foo", "time_span_type")
 	assert.Equal(t, len(errors), 1)
 }
+
+func TestValidateSortByAscending(t *testing.T) {
+	_, errors := validateSortBy("+foo", "sort_by")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSortByDescending(t *testing.T) {
+	_, errors := validateSortBy("-foo", "sort_by")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSortByNoDirection(t *testing.T) {
+	_, errors := validateSortBy("foo", "sort_by")
+	assert.Equal(t, 1, len(errors))
+}
