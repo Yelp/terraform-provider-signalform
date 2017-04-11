@@ -120,6 +120,24 @@ func dashboardResource() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "List of strings (which will be treated as an OR filter on the property)",
 						},
+						"value_required": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Determines whether a value is required for this variable (and therefore whether it will be possible to view this dashboard without this filter applied). false by default",
+						},
+						"values_suggested": &schema.Schema{
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "A list of strings of suggested values for this variable; these suggestions will receive priority when values are autosuggested for this variable",
+						},
+						"restricted_suggestions": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, this variable may only be set to the values listed in preferredSuggestions. and only these values will appear in autosuggestion menus. false by default",
+						},
 					},
 				},
 			},
@@ -242,6 +260,9 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 		item["property"] = variable["property"].(string)
 		item["alias"] = variable["alias"].(string)
 		item["value"] = variable["values"].(*schema.Set).List()
+		item["required"] = variable["value_required"].(bool)
+		item["preferredSuggestions"] = variable["values_suggested"].(*schema.Set).List()
+		item["restricted"] = variable["restricted_suggestions"].(bool)
 
 		vars_list[i] = item
 	}
