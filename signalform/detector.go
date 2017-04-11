@@ -69,13 +69,13 @@ func detectorResource() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ConflictsWith: []string{"time_range"},
-				Description:   "Milliseconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
+				Description:   "Seconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
 			},
 			"end_time": &schema.Schema{
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ConflictsWith: []string{"time_range"},
-				Description:   "Milliseconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
+				Description:   "Seconds since epoch. Used for visualization. You must specify time_span_type = \"absolute\" too.",
 			},
 			"rule": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -183,10 +183,10 @@ func getVisualizationOptionsDetector(d *schema.ResourceData) map[string]interfac
 		}
 	}
 	if val, ok := d.GetOk("start_time"); ok {
-		timeMap["start"] = val.(int)
+		timeMap["start"] = val.(int) * 1000
 	}
 	if val, ok := d.GetOk("end_time"); ok {
-		timeMap["end"] = val.(int)
+		timeMap["end"] = val.(int) * 1000
 	}
 	if len(timeMap) > 0 {
 		viz["time"] = timeMap
