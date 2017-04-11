@@ -59,10 +59,11 @@ func detectorResource() *schema.Resource {
 				Description:  "The type of time span defined for visualization. Must be either \"relative\" or \"absolute\".",
 			},
 			"time_range": &schema.Schema{
-				Type:          schema.TypeInt,
+				Type:          schema.TypeString,
 				Optional:      true,
+				ValidateFunc:  validateSignalfxRelativeTime,
+				Description:   "(time_span_type \"relative\" only) From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
 				ConflictsWith: []string{"start_time", "end_time"},
-				Description:   "The time range prior to now to visualize, in milliseconds. You must specify time_span_type = \"relative\" too.",
 			},
 			"start_time": &schema.Schema{
 				Type:          schema.TypeInt,
@@ -177,7 +178,9 @@ func getVisualizationOptionsDetector(d *schema.ResourceData) map[string]interfac
 		timeMap["type"] = val.(string)
 	}
 	if val, ok := d.GetOk("time_range"); ok {
-		timeMap["range"] = val.(int)
+		if ms, err := fromRangeToMilliSeconds(val.(string)); err == nil {
+			timeMap["range"] = ms
+		}
 	}
 	if val, ok := d.GetOk("start_time"); ok {
 		timeMap["start"] = val.(int)

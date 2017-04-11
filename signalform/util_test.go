@@ -57,17 +57,48 @@ func TestSendRequestTimeout(t *testing.T) {
 
 func TestValidateTimeSpanTypeAbsolute(t *testing.T) {
 	_, errors := validateTimeSpanType("absolute", "time_span_type")
-	assert.Equal(t, len(errors), 0)
+	assert.Equal(t, 0, len(errors))
 }
 
 func TestValidateTimeSpanTypeRelative(t *testing.T) {
 	_, errors := validateTimeSpanType("relative", "time_span_type")
-	assert.Equal(t, len(errors), 0)
+	assert.Equal(t, 0, len(errors))
 }
 
 func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
 	_, errors := validateTimeSpanType("foo", "time_span_type")
-	assert.Equal(t, len(errors), 1)
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeMinutes(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5m", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeHours(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5h", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeDays(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5d", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeWeeks(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5w", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeNotAllowed(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5M", "time_range")
+	assert.Equal(t, 1, len(errors))
+}
+
+func TestConversionSignalfxrealtiveTimeIntoMs(t *testing.T) {
+	ms, err := fromRangeToMilliSeconds("-15m")
+	assert.Equal(t, 900000, ms)
+	assert.Nil(t, err)
 }
 
 func TestValidateSortByAscending(t *testing.T) {

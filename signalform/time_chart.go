@@ -68,9 +68,10 @@ func timeChartResource() *schema.Resource {
 				ValidateFunc: validateTimeSpanType,
 			},
 			"time_range": &schema.Schema{
-				Type:          schema.TypeInt,
+				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "(time_span_type \"relative\" only) Absolute minutes offset from now to visualize",
+				ValidateFunc:  validateSignalfxRelativeTime,
+				Description:   "(time_span_type \"relative\" only) From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
 				ConflictsWith: []string{"start_time", "end_time"},
 			},
 			"start_time": &schema.Schema{
@@ -269,7 +270,9 @@ func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 		timeMap["type"] = val.(string)
 	}
 	if val, ok := d.GetOk("time_range"); ok {
-		timeMap["range"] = val.(int) * 60 * 1000
+		if ms, err := fromRangeToMilliSeconds(val.(string)); err == nil {
+			timeMap["range"] = ms
+		}
 	}
 	if val, ok := d.GetOk("start_time"); ok {
 		timeMap["start"] = val.(int) * 1000

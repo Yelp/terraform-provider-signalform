@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -172,4 +174,43 @@ func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
 		}
 	}
 	return nil
+}
+
+/*
+	Util method to validate SignalFx specific string format.
+*/
+func validateSignalfxRelativeTime(v interface{}, k string) (we []string, errors []error) {
+	ts := v.(string)
+
+	r, _ := regexp.Compile("-([0-9]+)[mhdw]")
+	if !r.MatchString(ts) {
+		errors = append(errors, fmt.Errorf("%s not allowed. Please use milliseconds from epoch or SignalFx time syntax (e.g. -5m, -1h)", ts))
+	}
+	return
+}
+
+/*
+*  Util method to convert from Signalfx string format to milliseconds
+ */
+func fromRangeToMilliSeconds(timeRange string) (int, error) {
+	r := regexp.MustCompile("-([0-9]+)([mhdw])")
+	ss := r.FindStringSubmatch(timeRange)
+	var c int
+	switch ss[2] {
+	case "m":
+		c = 60 * 1000
+	case "h":
+		c = 60 * 60 * 1000
+	case "d":
+		c = 24 * 60 * 60 * 1000
+	case "w":
+		c = 7 * 24 * 60 * 60 * 1000
+	default:
+		c = 1
+	}
+	val, err := strconv.Atoi(ss[1])
+	if err != nil {
+		return -1, err
+	}
+	return val * c, nil
 }

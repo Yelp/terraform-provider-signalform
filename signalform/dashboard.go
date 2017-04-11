@@ -37,15 +37,30 @@ func dashboardResource() *schema.Resource {
 				Required:    true,
 				Description: "The ID of the dashboard group that contains the dashboard. If an ID is not provided during creation, the dashboard will be placed in a newly created dashboard group",
 			},
-			"time_start": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Seconds since epoch to start displaying data",
+			"time_span_type": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Type of time interval of the chart. It must be \"absolute\" or \"relative\"",
+				ValidateFunc: validateTimeSpanType,
 			},
-			"time_end": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Seconds since epoch to end displaying data",
+			"time_range": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validateSignalfxRelativeTime,
+				Description:   "(time_span_type \"relative\" only) From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
+				ConflictsWith: []string{"start_time", "end_time"},
+			},
+			"start_time": &schema.Schema{
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "(type \"absolute\" only) Seconds since epoch to start the visualization",
+				ConflictsWith: []string{"time_range"},
+			},
+			"end_time": &schema.Schema{
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "(type \"absolute\" only) Seconds since epoch to end the visualization",
+				ConflictsWith: []string{"time_range"},
 			},
 			"chart": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -175,15 +190,26 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 }
 
 func getDashboardTime(d *schema.ResourceData) map[string]interface{} {
-	time := make(map[string]interface{})
-	if val, ok := d.GetOk("time_start"); ok {
-		time["start"] = val.(int) * 1000
+	timeMap := make(map[string]interface{})
+	if val, ok := d.GetOk("time_span_type"); ok {
+		if val == "relative" {
+			if val, ok := d.GetOk("time_range"); ok {
+				timeMap["start"] = val.(string)
+				timeMap["end"] = "Now"
+			}
+
+		} else {
+			if val, ok := d.GetOk("start_time"); ok {
+				timeMap["start"] = val.(int) * 1000
+			}
+			if val, ok := d.GetOk("end_time"); ok {
+				timeMap["end"] = val.(int) * 1000
+			}
+		}
 	}
-	if val, ok := d.GetOk("time_end"); ok {
-		time["end"] = val.(int) * 1000
-	}
-	if len(time) > 0 {
-		return time
+
+	if len(timeMap) > 0 {
+		return timeMap
 	}
 	return nil
 }
