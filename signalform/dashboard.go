@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"strings"
 )
 
 const DASHBOARD_API_URL = "https://api.signalfx.com/v2/dashboard"
@@ -36,6 +37,12 @@ func dashboardResource() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the dashboard group that contains the dashboard. If an ID is not provided during creation, the dashboard will be placed in a newly created dashboard group",
+			},
+			"charts_resolution": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Specifies the chart data display resolution for charts in this dashboard. Value can be one of \"default\", \"low\", \"high\", or \"highest\". default by default",
+				ValidateFunc: validateChartsResolution,
 			},
 			"time_span_type": &schema.Schema{
 				Type:         schema.TypeString,
@@ -204,6 +211,10 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 		payload["charts"] = charts
 	}
 
+	if chartsResolution, ok := d.GetOk("charts_resolution"); ok {
+		payload["chartDensity"] = strings.ToUpper(chartsResolution.(string))
+	}
+
 	return json.Marshal(payload)
 }
 
@@ -317,4 +328,19 @@ func dashboardDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", DASHBOARD_API_URL, d.Id())
 	return resourceDelete(url, config.SfxToken, d)
+}
+
+/*
+  Validate Chart Resolution option against a list of allowed words.
+*/
+func validateChartsResolution(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	allowedWords := []string{"default", "low", "high", "highest"}
+	for _, word := range allowedWords {
+		if value == word {
+			return
+		}
+	}
+	errors = append(errors, fmt.Errorf("%s not allowed; must be one of: %s", value, strings.Join(allowedWords, ", ")))
+	return
 }
