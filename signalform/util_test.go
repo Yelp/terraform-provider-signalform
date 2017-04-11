@@ -70,8 +70,23 @@ func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
 	assert.Equal(t, 1, len(errors))
 }
 
-func TestValidateSignalfxRelativeTime(t *testing.T) {
+func TestValidateSignalfxRelativeTimeMinutes(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5m", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeHours(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5h", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeDays(t *testing.T) {
 	_, errors := validateSignalfxRelativeTime("-5d", "time_range")
+	assert.Equal(t, 0, len(errors))
+}
+
+func TestValidateSignalfxRelativeTimeWeeks(t *testing.T) {
+	_, errors := validateSignalfxRelativeTime("-5w", "time_range")
 	assert.Equal(t, 0, len(errors))
 }
 
