@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"math"
+	"strings"
 )
 
 func heatmapChartResource() *schema.Resource {
@@ -69,14 +70,10 @@ func heatmapChartResource() *schema.Resource {
 				Description: "Properties to group by in the heatmap (in nesting order)",
 			},
 			"sort_by": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The property to use when sorting the elements",
-			},
-			"sorting": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "(Ascending by default) Must be \"Ascending\" or \"Descending\"",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateSortBy,
+				Description:  "The property to use when sorting the elements. Must be prepended with + for ascending or - for descending (e.g. -foo)",
 			},
 			"color_range": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -174,11 +171,13 @@ func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	}
 
 	if sortProperty, ok := d.GetOk("sort_by"); ok {
-		viz["sortProperty"] = sortProperty.(string)
-	}
-
-	if sortingType, ok := d.GetOk("sorting"); ok {
-		viz["sortDirection"] = sortingType.(string)
+		sortBy := sortProperty.(string)
+		viz["sortProperty"] = sortBy[1:]
+		if strings.HasPrefix(sortBy, "+") {
+			viz["sortDirection"] = "Ascending"
+		} else {
+			viz["sortDirection"] = "Descending"
+		}
 	}
 
 	viz["timestampHidden"] = d.Get("hide_timestamp").(bool)

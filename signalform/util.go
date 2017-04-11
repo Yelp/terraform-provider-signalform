@@ -53,6 +53,17 @@ func validateTimeSpanType(v interface{}, k string) (we []string, errors []error)
 }
 
 /*
+  Validates that sort_by field start with either + or -.
+*/
+func validateSortBy(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if !strings.HasPrefix(value, "+") && !strings.HasPrefix(value, "-") {
+		errors = append(errors, fmt.Errorf("%s not allowed; must start either with + or - (ascending or descending)", value))
+	}
+	return
+}
+
+/*
   Send a GET to get the current state of the resource. It just checks if the lastUpdated timestamp is
   later than the timestamp saved in the resource. If so, the resource has been modified in some way
   in the UI, and should be recreated. This is signaled by setting synced to false, meaning if synced is set to

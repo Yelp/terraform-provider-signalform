@@ -56,9 +56,10 @@ func listChartResource() *schema.Resource {
 				Description: "(false by default) If false, samples a subset of the output MTS, which improves UI performance",
 			},
 			"sort_by": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "A property of the metric time series to sort by",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateSortBy,
+				Description:  "The property to use when sorting the elements. Use 'value' if you want to sort by value. Must be prepended with + for ascending or - for descending (e.g. -foo)",
 			},
 			"refresh_interval": &schema.Schema{
 				Type:        schema.TypeInt,
