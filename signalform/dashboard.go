@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"strings"
 )
 
 const DASHBOARD_API_URL = "https://api.signalfx.com/v2/dashboard"
@@ -36,6 +37,12 @@ func dashboardResource() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the dashboard group that contains the dashboard. If an ID is not provided during creation, the dashboard will be placed in a newly created dashboard group",
+			},
+			"charts_resolution": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Specifies the chart data display resolution for charts in this dashboard. Value can be one of \"default\", \"low\", \"high\", or \"highest\". default by default",
+				ValidateFunc: validateChartsResolution,
 			},
 			"time_span_type": &schema.Schema{
 				Type:         schema.TypeString,
@@ -120,6 +127,24 @@ func dashboardResource() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "List of strings (which will be treated as an OR filter on the property)",
 						},
+						"value_required": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Determines whether a value is required for this variable (and therefore whether it will be possible to view this dashboard without this filter applied). false by default",
+						},
+						"values_suggested": &schema.Schema{
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "A list of strings of suggested values for this variable; these suggestions will receive priority when values are autosuggested for this variable",
+						},
+						"restricted_suggestions": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, this variable may only be set to the values listed in preferredSuggestions. and only these values will appear in autosuggestion menus. false by default",
+						},
 					},
 				},
 			},
@@ -186,6 +211,10 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 		payload["charts"] = charts
 	}
 
+	if chartsResolution, ok := d.GetOk("charts_resolution"); ok {
+		payload["chartDensity"] = strings.ToUpper(chartsResolution.(string))
+	}
+
 	return json.Marshal(payload)
 }
 
@@ -242,6 +271,11 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 		item["property"] = variable["property"].(string)
 		item["alias"] = variable["alias"].(string)
 		item["value"] = variable["values"].(*schema.Set).List()
+		item["required"] = variable["value_required"].(bool)
+		if val, ok := variable["values_suggested"]; ok {
+			item["preferredSuggestions"] = val.(*schema.Set).List()
+		}
+		item["restricted"] = variable["restricted_suggestions"].(bool)
 
 		vars_list[i] = item
 	}
@@ -296,4 +330,19 @@ func dashboardDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", DASHBOARD_API_URL, d.Id())
 	return resourceDelete(url, config.SfxToken, d)
+}
+
+/*
+  Validate Chart Resolution option against a list of allowed words.
+*/
+func validateChartsResolution(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	allowedWords := []string{"default", "low", "high", "highest"}
+	for _, word := range allowedWords {
+		if value == word {
+			return
+		}
+	}
+	errors = append(errors, fmt.Errorf("%s not allowed; must be one of: %s", value, strings.Join(allowedWords, ", ")))
+	return
 }
