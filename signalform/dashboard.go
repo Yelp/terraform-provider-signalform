@@ -272,7 +272,9 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 		item["alias"] = variable["alias"].(string)
 		item["value"] = variable["values"].(*schema.Set).List()
 		item["required"] = variable["value_required"].(bool)
-		item["preferredSuggestions"] = variable["values_suggested"].(*schema.Set).List()
+		if val, ok := variable["values_suggested"]; ok {
+			item["preferredSuggestions"] = val.(*schema.Set).List()
+		}
 		item["restricted"] = variable["restricted_suggestions"].(bool)
 
 		vars_list[i] = item
