@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -16,6 +17,19 @@ const (
 	// Workaround for Signalfx bug related to post processing and lastUpdatedTime
 	OFFSET        = 10000.0
 	CHART_API_URL = "https://api.signalfx.com/v2/chart"
+
+	// Colors
+	GRAY       = "#999999"
+	BLUE       = "#0077c2"
+	NAVY       = "#6CA2B7"
+	ORANGE     = "#b04600"
+	YELLOW     = "#e5b312"
+	MAGENTA    = "#bd468d"
+	PURPLE     = "#e9008a"
+	VIOLET     = "#876ffe"
+	LILAC      = "#a747ff"
+	GREEN      = "#05ce00"
+	AQUAMARINE = "#0dba8f"
 )
 
 /*
@@ -44,6 +58,17 @@ func sendRequest(method string, url string, token string, payload []byte) (int, 
 }
 
 /*
+  Validates the color_range field against a list of allowed words.
+*/
+func validateChartColor(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if value != "gray" && value != "blue" && value != "navy" && value != "orange" && value != "yellow" && value != "magenta" && value != "purple" && value != "violet" && value != "lilac" && value != "green" && value != "aquamarine" {
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either gray, blue, navy, orange, yellow, magenta, purple, violet, lilac, green, aquamarine", value))
+	}
+	return
+}
+
+/*
   Validates the time_span_type field against a list of allowed words.
 */
 func validateTimeSpanType(v interface{}, k string) (we []string, errors []error) {
@@ -63,6 +88,25 @@ func validateSortBy(v interface{}, k string) (we []string, errors []error) {
 		errors = append(errors, fmt.Errorf("%s not allowed; must start either with + or - (ascending or descending)", value))
 	}
 	return
+}
+
+/*
+	Get Color Scale Options
+*/
+func getColorScaleOptions(d *schema.ResourceData) map[string]interface{} {
+	item := make(map[string]interface{})
+	colorScale := d.Get("color_scale").(*schema.Set).List()[0]
+	options := colorScale.(map[string]interface{})
+
+	thresholdsList := options["thresholds"].([]interface{})
+	thresholds := make([]int, len(thresholdsList))
+	for i := range thresholdsList {
+		thresholds[i] = thresholdsList[i].(int)
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(thresholds)))
+	item["thresholds"] = thresholds
+	item["inverted"] = options["inverted"].(bool)
+	return item
 }
 
 /*
