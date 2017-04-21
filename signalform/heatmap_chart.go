@@ -8,6 +8,20 @@ import (
 	"strings"
 )
 
+var ChartColors = map[string]string{
+	"gray":       "#999999",
+	"blue":       "#0077c2",
+	"navy":       "#6CA2B7",
+	"orange":     "#b04600",
+	"yellow":     "#e5b312",
+	"magenta":    "#bd468d",
+	"purple":     "#e9008a",
+	"violet":     "#876ffe",
+	"lilac":      "#a747ff",
+	"green":      "#05ce00",
+	"aquamarine": "#0dba8f",
+}
+
 func heatmapChartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -169,30 +183,8 @@ func getHeatmapColorRangeOptions(d *schema.ResourceData) map[string]interface{} 
 				item["max"] = val.(float64)
 			}
 		}
-		switch color := options["color"].(string); color {
-		case "gray":
-			item["color"] = GRAY
-		case "blue":
-			item["color"] = BLUE
-		case "navy":
-			item["color"] = NAVY
-		case "orange":
-			item["color"] = ORANGE
-		case "yellow":
-			item["color"] = YELLOW
-		case "magenta":
-			item["color"] = MAGENTA
-		case "purple":
-			item["color"] = PURPLE
-		case "violet":
-			item["color"] = VIOLET
-		case "lilac":
-			item["color"] = LILAC
-		case "green":
-			item["color"] = GREEN
-		case "acquamarine":
-			item["color"] = AQUAMARINE
-		}
+		color := options["color"].(string)
+		item["color"] = ChartColors[color]
 	}
 	return item
 }
@@ -273,4 +265,15 @@ func heatmapchartDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 	return resourceDelete(url, config.SfxToken, d)
+}
+
+/*
+  Validates the color_range field against a list of allowed words.
+*/
+func validateChartColor(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if _, ok := ChartColors[value]; !ok {
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either gray, blue, navy, orange, yellow, magenta, purple, violet, lilac, green, aquamarine", value))
+	}
+	return
 }

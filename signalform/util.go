@@ -17,19 +17,6 @@ const (
 	// Workaround for Signalfx bug related to post processing and lastUpdatedTime
 	OFFSET        = 10000.0
 	CHART_API_URL = "https://api.signalfx.com/v2/chart"
-
-	// Colors
-	GRAY       = "#999999"
-	BLUE       = "#0077c2"
-	NAVY       = "#6CA2B7"
-	ORANGE     = "#b04600"
-	YELLOW     = "#e5b312"
-	MAGENTA    = "#bd468d"
-	PURPLE     = "#e9008a"
-	VIOLET     = "#876ffe"
-	LILAC      = "#a747ff"
-	GREEN      = "#05ce00"
-	AQUAMARINE = "#0dba8f"
 )
 
 /*
@@ -55,17 +42,6 @@ func sendRequest(method string, url string, token string, payload []byte) (int, 
 	}
 
 	return resp.StatusCode, body, nil
-}
-
-/*
-  Validates the color_range field against a list of allowed words.
-*/
-func validateChartColor(v interface{}, k string) (we []string, errors []error) {
-	value := v.(string)
-	if value != "gray" && value != "blue" && value != "navy" && value != "orange" && value != "yellow" && value != "magenta" && value != "purple" && value != "violet" && value != "lilac" && value != "green" && value != "aquamarine" {
-		errors = append(errors, fmt.Errorf("%s not allowed; must be either gray, blue, navy, orange, yellow, magenta, purple, violet, lilac, green, aquamarine", value))
-	}
-	return
 }
 
 /*
