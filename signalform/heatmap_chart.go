@@ -122,8 +122,6 @@ func heatmapChartResource() *schema.Resource {
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeInt},
 							Description: "The thresholds to set for the color range being used. Values must be in descending order",
-							MaxItems:    4,
-							MinItems:    2,
 						},
 						"inverted": &schema.Schema{
 							Type:        schema.TypeBool,
