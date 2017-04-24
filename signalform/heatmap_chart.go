@@ -8,6 +8,20 @@ import (
 	"strings"
 )
 
+var ChartColors = map[string]string{
+	"gray":       "#999999",
+	"blue":       "#0077c2",
+	"navy":       "#6CA2B7",
+	"orange":     "#b04600",
+	"yellow":     "#e5b312",
+	"magenta":    "#bd468d",
+	"purple":     "#e9008a",
+	"violet":     "#876ffe",
+	"lilac":      "#a747ff",
+	"green":      "#05ce00",
+	"aquamarine": "#0dba8f",
+}
+
 func heatmapChartResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -42,11 +56,6 @@ func heatmapChartResource() *schema.Resource {
 				Optional:    true,
 				Description: "(Metric by default) Must be \"Metric\" or \"Binary\"",
 			},
-			//"color_by": &schema.Schema{
-			//	Type:        schema.TypeString,
-			//	Optional:    true,
-			///	Description: "(Range by default) Must be \"Range\" or \"Scale\". Range maps to Auto and Scale maps to Fixed in the UI",
-			//},
 			"minimum_resolution": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -78,13 +87,13 @@ func heatmapChartResource() *schema.Resource {
 			"color_range": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Values and color for the color range. Example: colorRange : { min : 0, max : 100, color : \"#00FF00\" }",
+				Description: "Values and color for the color range. Example: colorRange : { min : 0, max : 100, color : \"blue\" }",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min_value": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxFloat32,
+							Default:     -math.MaxFloat32,
 							Description: "The minimum value within the coloring range",
 						},
 						"max_value": &schema.Schema{
@@ -94,17 +103,29 @@ func heatmapChartResource() *schema.Resource {
 							Description: "The maximum value within the coloring range",
 						},
 						"color": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The color range to use",
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The color range to use. Must be either \"gray\", \"blue\", \"navy\", \"orange\", \"yellow\", \"magenta\", \"purple\", \"violet\", \"lilac\", \"green\", \"aquamarine\"",
+							ValidateFunc: validateChartColor,
 						},
-						"scale_thresholds": &schema.Schema{
+					},
+				},
+			},
+			"color_scale": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Values for each color in the range. Example: { thresholds : [80, 60, 40, 20, 0], inverted : true }",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"thresholds": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeFloat},
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
 							Description: "The thresholds to set for the color range being used. Values must be in descending order",
+							MaxItems:    4,
+							MinItems:    2,
 						},
-						"scale_inverted": &schema.Schema{
+						"inverted": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
@@ -146,14 +167,33 @@ func getPayloadHeatmapChart(d *schema.ResourceData) ([]byte, error) {
 	return json.Marshal(payload)
 }
 
+func getHeatmapColorRangeOptions(d *schema.ResourceData) map[string]interface{} {
+	item := make(map[string]interface{})
+	colorRange := d.Get("color_range").(*schema.Set).List()
+	for _, options := range colorRange {
+		options := options.(map[string]interface{})
+
+		if val, ok := options["min_value"]; ok {
+			if val.(float64) != -math.MaxFloat32 {
+				item["min"] = val.(float64)
+			}
+		}
+		if val, ok := options["max_value"]; ok {
+			if val.(float64) != math.MaxFloat32 {
+				item["max"] = val.(float64)
+			}
+		}
+		color := options["color"].(string)
+		item["color"] = ChartColors[color]
+	}
+	return item
+}
+
 func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 	viz := make(map[string]interface{})
 	viz["type"] = "Heatmap"
 	if val, ok := d.GetOk("unit_prefix"); ok {
 		viz["unitPrefix"] = val.(string)
-	}
-	if val, ok := d.GetOk("color_by"); ok {
-		viz["colorBy"] = val.(string)
 	}
 
 	programOptions := make(map[string]interface{})
@@ -178,6 +218,14 @@ func getHeatmapOptionsChart(d *schema.ResourceData) map[string]interface{} {
 		} else {
 			viz["sortDirection"] = "Descending"
 		}
+	}
+
+	if colorRangeOptions := getHeatmapColorRangeOptions(d); len(colorRangeOptions) > 0 {
+		viz["colorBy"] = "Range"
+		viz["colorRange"] = colorRangeOptions
+	} else if colorScaleOptions := getColorScaleOptions(d); len(colorScaleOptions) > 0 {
+		viz["colorBy"] = "Scale"
+		viz["colorScale"] = colorScaleOptions
 	}
 
 	viz["timestampHidden"] = d.Get("hide_timestamp").(bool)
@@ -217,4 +265,15 @@ func heatmapchartDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 	return resourceDelete(url, config.SfxToken, d)
+}
+
+/*
+  Validates the color_range field against a list of allowed words.
+*/
+func validateChartColor(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if _, ok := ChartColors[value]; !ok {
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either gray, blue, navy, orange, yellow, magenta, purple, violet, lilac, green, aquamarine", value))
+	}
+	return
 }

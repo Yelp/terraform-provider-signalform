@@ -115,3 +115,13 @@ func TestValidateSortByNoDirection(t *testing.T) {
 	_, errors := validateSortBy("foo", "sort_by")
 	assert.Equal(t, 1, len(errors))
 }
+
+func TestValidateChartColors(t *testing.T) {
+	_, err := validateChartColor("blue", "color")
+	assert.Equal(t, 0, len(err))
+}
+
+func TestValidateChartColorsFail(t *testing.T) {
+	_, err := validateChartColor("whatever", "color")
+	assert.Equal(t, 1, len(err))
+}

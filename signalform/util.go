@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -63,6 +64,25 @@ func validateSortBy(v interface{}, k string) (we []string, errors []error) {
 		errors = append(errors, fmt.Errorf("%s not allowed; must start either with + or - (ascending or descending)", value))
 	}
 	return
+}
+
+/*
+	Get Color Scale Options
+*/
+func getColorScaleOptions(d *schema.ResourceData) map[string]interface{} {
+	item := make(map[string]interface{})
+	colorScale := d.Get("color_scale").(*schema.Set).List()[0]
+	options := colorScale.(map[string]interface{})
+
+	thresholdsList := options["thresholds"].([]interface{})
+	thresholds := make([]int, len(thresholdsList))
+	for i := range thresholdsList {
+		thresholds[i] = thresholdsList[i].(int)
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(thresholds)))
+	item["thresholds"] = thresholds
+	item["inverted"] = options["inverted"].(bool)
+	return item
 }
 
 /*

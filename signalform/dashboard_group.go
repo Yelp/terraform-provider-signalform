@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"io/ioutil"
 )
 
 const DASHBOARD_GROUP_API_URL = "https://api.signalfx.com/v2/dashboardgroup"
@@ -53,9 +52,7 @@ func getPayloadDashboardGroup(d *schema.ResourceData) ([]byte, error) {
 		"dashboards": make([]string, 0),
 	}
 
-	a, e := json.Marshal(payload)
-	_ = ioutil.WriteFile("/tmp/fdc_chartCreate", a, 0644)
-	return a, e
+	return json.Marshal(payload)
 }
 
 func dashboardgroupCreate(d *schema.ResourceData, meta interface{}) error {

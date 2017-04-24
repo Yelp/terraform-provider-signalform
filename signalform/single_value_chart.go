@@ -72,6 +72,29 @@ func singleValueChartResource() *schema.Resource {
 				Description: "(false by default) Whether to show a trend line below the current value",
 				Default:     false,
 			},
+			"color_scale": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Values for each color in the range. Example: { thresholds : [80, 60, 40, 20, 0], inverted : true }",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"thresholds": &schema.Schema{
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Description: "The thresholds to set for the color range being used. Values must be in descending order",
+							MaxItems:    4,
+							MinItems:    2,
+						},
+						"inverted": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "(false by default) If false or omitted, values are red if they are above the highest specified value. If true, values are red if they are below the lowest specified value",
+						},
+					},
+				},
+			},
 		},
 
 		Create: singlevaluechartCreate,
@@ -106,7 +129,14 @@ func getSingleValueChartOptions(d *schema.ResourceData) map[string]interface{} {
 		viz["unitPrefix"] = val.(string)
 	}
 	if val, ok := d.GetOk("color_by"); ok {
-		viz["colorBy"] = val.(string)
+		if val == "Scale" {
+			if colorScaleOptions := getColorScaleOptions(d); len(colorScaleOptions) > 0 {
+				viz["colorBy"] = "Scale"
+				viz["colorScale"] = colorScaleOptions
+			}
+		} else {
+			viz["colorBy"] = val.(string)
+		}
 	}
 
 	programOptions := make(map[string]interface{})
