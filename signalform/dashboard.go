@@ -123,7 +123,7 @@ func dashboardResource() *schema.Resource {
 						},
 						"values": &schema.Schema{
 							Type:        schema.TypeSet,
-							Required:    true,
+							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "List of strings (which will be treated as an OR filter on the property)",
 						},
@@ -270,7 +270,9 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 
 		item["property"] = variable["property"].(string)
 		item["alias"] = variable["alias"].(string)
-		item["value"] = variable["values"].(*schema.Set).List()
+		if val, ok := variable["values"]; ok {
+			item["value"] = val.(*schema.Set).List()
+		}
 		item["required"] = variable["value_required"].(bool)
 		if val, ok := variable["values_suggested"]; ok {
 			item["preferredSuggestions"] = val.(*schema.Set).List()
