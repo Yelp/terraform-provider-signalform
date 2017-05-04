@@ -121,6 +121,11 @@ func dashboardResource() *schema.Resource {
 							Required:    true,
 							Description: "An alias for the dashboard variable. This text will appear as the label for the dropdown field on the dashboard",
 						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Variable description",
+						},
 						"values": &schema.Schema{
 							Type:        schema.TypeSet,
 							Optional:    true,
@@ -269,6 +274,7 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 		item := make(map[string]interface{})
 
 		item["property"] = variable["property"].(string)
+		item["description"] = variable["description"].(string)
 		item["alias"] = variable["alias"].(string)
 		if val, ok := variable["values"]; ok {
 			values_list := val.(*schema.Set).List()
