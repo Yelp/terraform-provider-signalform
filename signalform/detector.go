@@ -42,9 +42,10 @@ func detectorResource() *schema.Resource {
 				Description: "Signalflow program text for the detector. More info at \"https://developers.signalfx.com/docs/signalflow-overview\"",
 			},
 			"max_delay": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "How long (in seconds) to wait for late datapoints",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long (in seconds) to wait for late datapoints",
+				ValidateFunc: validateMaxDelayValue,
 			},
 			"show_data_markers": &schema.Schema{
 				Type:        schema.TypeBool,
