@@ -44,7 +44,7 @@ func detectorResource() *schema.Resource {
 			"max_delay": &schema.Schema{
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Description:  "How long (in seconds) to wait for late datapoints",
+				Description:  "How long (in seconds) to wait for late datapoints. Max value 900s (15m)",
 				ValidateFunc: validateMaxDelayValue,
 			},
 			"show_data_markers": &schema.Schema{
