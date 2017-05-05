@@ -61,29 +61,23 @@ func timeChartResource() *schema.Resource {
 				Optional:    true,
 				Description: "(false by default) If false, samples a subset of the output MTS, which improves UI performance",
 			},
-			"time_span_type": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Type of time interval of the chart. It must be \"absolute\" or \"relative\"",
-				ValidateFunc: validateTimeSpanType,
-			},
 			"time_range": &schema.Schema{
 				Type:          schema.TypeString,
 				Optional:      true,
 				ValidateFunc:  validateSignalfxRelativeTime,
-				Description:   "(time_span_type \"relative\" only) From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
+				Description:   "From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
 				ConflictsWith: []string{"start_time", "end_time"},
 			},
 			"start_time": &schema.Schema{
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   "(type \"absolute\" only) Seconds since epoch to start the visualization",
+				Description:   "Seconds since epoch to start the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
 			"end_time": &schema.Schema{
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   "(type \"absolute\" only) Seconds since epoch to end the visualization",
+				Description:   "Seconds since epoch to end the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
 			// TODO: Do the same for the axis_right as soon as signalfx relase the ability to
@@ -266,19 +260,18 @@ func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 	}
 
 	timeMap := make(map[string]interface{})
-	if val, ok := d.GetOk("time_span_type"); ok {
-		timeMap["type"] = val.(string)
-	}
 	if val, ok := d.GetOk("time_range"); ok {
 		if ms, err := fromRangeToMilliSeconds(val.(string)); err == nil {
 			timeMap["range"] = ms
+			timeMap["type"] = "relative"
 		}
 	}
 	if val, ok := d.GetOk("start_time"); ok {
 		timeMap["start"] = val.(int) * 1000
-	}
-	if val, ok := d.GetOk("end_time"); ok {
-		timeMap["end"] = val.(int) * 1000
+		timeMap["type"] = "absolute"
+		if val, ok := d.GetOk("end_time"); ok {
+			timeMap["end"] = val.(int) * 1000
+		}
 	}
 	if len(timeMap) > 0 {
 		viz["time"] = timeMap

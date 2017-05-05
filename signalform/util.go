@@ -45,17 +45,6 @@ func sendRequest(method string, url string, token string, payload []byte) (int, 
 }
 
 /*
-  Validates the time_span_type field against a list of allowed words.
-*/
-func validateTimeSpanType(v interface{}, k string) (we []string, errors []error) {
-	value := v.(string)
-	if value != "relative" && value != "absolute" {
-		errors = append(errors, fmt.Errorf("%s not allowed; must be either relative or absolute", value))
-	}
-	return
-}
-
-/*
   Validates that sort_by field start with either + or -.
 */
 func validateSortBy(v interface{}, k string) (we []string, errors []error) {

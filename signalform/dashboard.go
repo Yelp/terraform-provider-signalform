@@ -44,29 +44,23 @@ func dashboardResource() *schema.Resource {
 				Description:  "Specifies the chart data display resolution for charts in this dashboard. Value can be one of \"default\", \"low\", \"high\", or \"highest\". default by default",
 				ValidateFunc: validateChartsResolution,
 			},
-			"time_span_type": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Type of time interval of the chart. It must be \"absolute\" or \"relative\"",
-				ValidateFunc: validateTimeSpanType,
-			},
 			"time_range": &schema.Schema{
 				Type:          schema.TypeString,
 				Optional:      true,
 				ValidateFunc:  validateSignalfxRelativeTime,
-				Description:   "(time_span_type \"relative\" only) From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
+				Description:   "From when to display data. SignalFx time syntax (e.g. -5m, -1h)",
 				ConflictsWith: []string{"start_time", "end_time"},
 			},
 			"start_time": &schema.Schema{
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   "(type \"absolute\" only) Seconds since epoch to start the visualization",
+				Description:   "Seconds since epoch to start the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
 			"end_time": &schema.Schema{
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Description:   "(type \"absolute\" only) Seconds since epoch to end the visualization",
+				Description:   "Seconds since epoch to end the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
 			"chart": &schema.Schema{
@@ -220,25 +214,31 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 		payload["chartDensity"] = strings.ToUpper(chartsResolution.(string))
 	}
 
-	return json.Marshal(payload)
+	a, e := json.Marshal(payload)
+	f, err := os.OpenFile("/tmp/dashboards", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(string(a)); err != nil {
+		panic(err)
+	}
+	return a, e
 }
 
 func getDashboardTime(d *schema.ResourceData) map[string]interface{} {
 	timeMap := make(map[string]interface{})
-	if val, ok := d.GetOk("time_span_type"); ok {
-		if val == "relative" {
-			if val, ok := d.GetOk("time_range"); ok {
-				timeMap["start"] = val.(string)
-				timeMap["end"] = "Now"
-			}
-
-		} else {
-			if val, ok := d.GetOk("start_time"); ok {
-				timeMap["start"] = val.(int) * 1000
-			}
-			if val, ok := d.GetOk("end_time"); ok {
-				timeMap["end"] = val.(int) * 1000
-			}
+	if val, ok := d.GetOk("time_range"); ok {
+		timeMap["start"] = val.(string)
+		timeMap["end"] = "Now"
+	} else {
+		if val, ok := d.GetOk("start_time"); ok {
+			timeMap["start"] = val.(int) * 1000
+		}
+		if val, ok := d.GetOk("end_time"); ok {
+			timeMap["end"] = val.(int) * 1000
 		}
 	}
 

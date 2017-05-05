@@ -55,21 +55,6 @@ func TestSendRequestTimeout(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestValidateTimeSpanTypeAbsolute(t *testing.T) {
-	_, errors := validateTimeSpanType("absolute", "time_span_type")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeSpanTypeRelative(t *testing.T) {
-	_, errors := validateTimeSpanType("relative", "time_span_type")
-	assert.Equal(t, 0, len(errors))
-}
-
-func TestValidateTimeSpanTypeNotAllowed(t *testing.T) {
-	_, errors := validateTimeSpanType("foo", "time_span_type")
-	assert.Equal(t, 1, len(errors))
-}
-
 func TestValidateSignalfxRelativeTimeMinutes(t *testing.T) {
 	_, errors := validateSignalfxRelativeTime("-5m", "time_range")
 	assert.Equal(t, 0, len(errors))
