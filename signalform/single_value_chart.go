@@ -46,9 +46,10 @@ func singleValueChartResource() *schema.Resource {
 				Description: "(Metric by default) Must be \"Metric\", \"Dimension\", or \"Scale\". \"Scale\" maps to Color by Value in the UI",
 			},
 			"max_delay": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "How long (in seconds) to wait for late datapoints",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long (in seconds) to wait for late datapoints",
+				ValidateFunc: validateMaxDelayValue,
 			},
 			"refresh_interval": &schema.Schema{
 				Type:        schema.TypeInt,

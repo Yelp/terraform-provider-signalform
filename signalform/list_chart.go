@@ -46,9 +46,10 @@ func listChartResource() *schema.Resource {
 				Description: "(Metric by default) Must be \"Metric\" or \"Dimension\"",
 			},
 			"max_delay": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "How long (in seconds) to wait for late datapoints",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long (in seconds) to wait for late datapoints",
+				ValidateFunc: validateMaxDelayValue,
 			},
 			"disable_sampling": &schema.Schema{
 				Type:        schema.TypeBool,

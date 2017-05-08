@@ -62,9 +62,10 @@ func heatmapChartResource() *schema.Resource {
 				Description: "The minimum resolution (in seconds) to use for computing the underlying program",
 			},
 			"max_delay": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "How long (in seconds) to wait for late datapoints",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "How long (in seconds) to wait for late datapoints",
+				ValidateFunc: validateMaxDelayValue,
 			},
 			"disable_sampling": &schema.Schema{
 				Type:        schema.TypeBool,

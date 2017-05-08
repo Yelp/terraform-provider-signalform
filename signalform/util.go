@@ -45,6 +45,17 @@ func sendRequest(method string, url string, token string, payload []byte) (int, 
 }
 
 /*
+  Validates max_delay field; it must be between 0 and 900 seconds (15m in).
+*/
+func validateMaxDelayValue(v interface{}, k string) (we []string, errors []error) {
+	value := v.(int)
+	if value < 0 || value > 900 {
+		errors = append(errors, fmt.Errorf("%d not allowed; max_delay must be >= 0 && <= 900", value))
+	}
+	return
+}
+
+/*
   Validates that sort_by field start with either + or -.
 */
 func validateSortBy(v interface{}, k string) (we []string, errors []error) {
