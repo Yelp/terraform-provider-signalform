@@ -214,18 +214,7 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 		payload["chartDensity"] = strings.ToUpper(chartsResolution.(string))
 	}
 
-	a, e := json.Marshal(payload)
-	f, err := os.OpenFile("/tmp/dashboards", os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		panic(err)
-	}
-
-	defer f.Close()
-
-	if _, err = f.WriteString(string(a)); err != nil {
-		panic(err)
-	}
-	return a, e
+	return json.Marshal(payload)
 }
 
 func getDashboardTime(d *schema.ResourceData) map[string]interface{} {
