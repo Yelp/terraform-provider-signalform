@@ -5,7 +5,27 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"math"
+	"strings"
 )
+
+var PaletteColors = map[string]int{
+	"gray":       0,
+	"blue":       1,
+	"#00b9ff":    2,
+	"navy":       3,
+	"orange":     4,
+	"#f47e00":    5,
+	"yellow":     6,
+	"magenta":    7,
+	"purple":     8,
+	"#ff8dd1":    9,
+	"violet":     10,
+	"lilac":      11,
+	"#ab99bc":    12,
+	"#007c1d":    13,
+	"green":      14,
+	"aquamarine": 15,
+}
 
 func timeChartResource() *schema.Resource {
 	return &schema.Resource{
@@ -150,6 +170,31 @@ func timeChartResource() *schema.Resource {
 				Description:  "(LineChart by default) The default plot display style for the visualization. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
 				ValidateFunc: validatePlotTypeTimeChart,
 			},
+			"viz_options": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Plot-level customization options, associated with a publish statement",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"label": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The label used in the publish statement that displays the plot (metric time series data) you want to customize",
+						},
+						"color": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Color to use",
+							ValidateFunc: validateTimeChartColor,
+						},
+						"plot_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The visualization style to use. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
+						},
+					},
+				},
+			},
 		},
 
 		Create: timechartCreate,
@@ -176,11 +221,36 @@ func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 	if legendOptions := getLegendOptions(d); len(legendOptions) > 0 {
 		viz["legendOptions"] = legendOptions
 	}
+	if vizOptions := getPerSignalVizOptions(d); len(vizOptions) > 0 {
+		viz["publishLabelOptions"] = vizOptions
+	}
 	if len(viz) > 0 {
 		payload["options"] = viz
 	}
 
 	return json.Marshal(payload)
+}
+
+func getPerSignalVizOptions(d *schema.ResourceData) []map[string]interface{} {
+	viz := d.Get("viz_options").(*schema.Set).List()
+	viz_list := make([]map[string]interface{}, len(viz))
+	for i, v := range viz {
+		v := v.(map[string]interface{})
+		item := make(map[string]interface{})
+
+		item["label"] = v["label"].(string)
+		if val, ok := v["color"].(string); ok {
+			if elem, ok := PaletteColors[val]; ok {
+				item["paletteIndex"] = elem
+			}
+		}
+		if val, ok := v["plot_type"].(string); ok {
+			item["plotType"] = val
+		}
+
+		viz_list[i] = item
+	}
+	return viz_list
 }
 
 func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
@@ -335,6 +405,22 @@ func validatePlotTypeTimeChart(v interface{}, k string) (we []string, errors []e
 	value := v.(string)
 	if value != "LineChart" && value != "AreaChart" && value != "ColumnChart" && value != "Histogram" {
 		errors = append(errors, fmt.Errorf("%s not allowed; Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"", value))
+	}
+	return
+}
+
+/*
+  Validates the color field against a list of allowed words.
+*/
+func validateTimeChartColor(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if _, ok := PaletteColors[value]; !ok {
+		keys := make([]string, 0, len(PaletteColors))
+		for k := range PaletteColors {
+			keys = append(keys, k)
+		}
+		joinedColors := strings.Join(keys, ",")
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s LEN: %d", value, joinedColors, len(PaletteColors)))
 	}
 	return
 }
