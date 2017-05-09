@@ -107,7 +107,7 @@ func heatmapChartResource() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							Description:  "The color range to use. Must be either \"gray\", \"blue\", \"navy\", \"orange\", \"yellow\", \"magenta\", \"purple\", \"violet\", \"lilac\", \"green\", \"aquamarine\"",
-							ValidateFunc: validateChartColor,
+							ValidateFunc: validateHeatmapChartColor,
 						},
 					},
 				},
@@ -269,10 +269,15 @@ func heatmapchartDelete(d *schema.ResourceData, meta interface{}) error {
 /*
   Validates the color_range field against a list of allowed words.
 */
-func validateChartColor(v interface{}, k string) (we []string, errors []error) {
+func validateHeatmapChartColor(v interface{}, k string) (we []string, errors []error) {
 	value := v.(string)
 	if _, ok := ChartColors[value]; !ok {
-		errors = append(errors, fmt.Errorf("%s not allowed; must be either gray, blue, navy, orange, yellow, magenta, purple, violet, lilac, green, aquamarine", value))
+		keys := make([]string, 0, len(ChartColors))
+		for k := range ChartColors {
+			keys = append(keys, k)
+		}
+		joinedColors := strings.Join(keys, ",")
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s", value, joinedColors))
 	}
 	return
 }
