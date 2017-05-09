@@ -101,9 +101,43 @@ func timeChartResource() *schema.Resource {
 				Description:   "Seconds since epoch to end the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
-			// TODO: Do the same for the axis_right as soon as signalfx relase the ability to
-			// choose visualitation options at a metric level (since you can enable the right
-			// axis at a metric level)
+			"axis_right": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"min_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MinInt32,
+							Description: "The minimum value for the right axis",
+						},
+						"max_value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MaxInt32,
+							Description: "The maximum value for the right axis",
+						},
+						"label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Label of the right axis",
+						},
+						"high_watermark": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MaxInt32,
+							Description: "A line to draw as a high watermark",
+						},
+						"low_watermark": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     math.MinInt32,
+							Description: "A line to draw as a low watermark",
+						},
+					},
+				},
+			},
 			"axis_left": &schema.Schema{
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -140,6 +174,11 @@ func timeChartResource() *schema.Resource {
 						},
 					},
 				},
+			},
+			"axes_precision": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Force a specific number of significant digits in the y-axis",
 			},
 			"legend_fields_to_hide": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -187,10 +226,17 @@ func timeChartResource() *schema.Resource {
 							Description:  "Color to use",
 							ValidateFunc: validateTimeChartColor,
 						},
+						"axis": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validateAxisTimeChart,
+							Description:  "The Y-axis associated with values for this plot. Must be either \"right\" or \"left\"",
+						},
 						"plot_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The visualization style to use. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validatePlotTypeTimeChart,
+							Description:  "The visualization style to use. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
 						},
 					},
 				},
@@ -244,8 +290,15 @@ func getPerSignalVizOptions(d *schema.ResourceData) []map[string]interface{} {
 				item["paletteIndex"] = elem
 			}
 		}
-		if val, ok := v["plot_type"].(string); ok {
+		if val, ok := v["plot_type"].(string); ok && val != "" {
 			item["plotType"] = val
+		}
+		if val, ok := v["axis"].(string); ok && val != "" {
+			if val == "right" {
+				item["yAxis"] = 1
+			} else {
+				item["yAxis"] = 0
+			}
 		}
 
 		viz_list[i] = item
@@ -254,49 +307,55 @@ func getPerSignalVizOptions(d *schema.ResourceData) []map[string]interface{} {
 }
 
 func getAxesOptions(d *schema.ResourceData) []map[string]interface{} {
-	if tf_axis_opts, ok := d.GetOk("axis_left"); ok {
-		tf_left_axis_opts := tf_axis_opts.(*schema.Set).List()
-		axes_list_opts := make([]map[string]interface{}, len(tf_left_axis_opts))
-		for i, tf_opt := range tf_left_axis_opts {
-			tf_opt := tf_opt.(map[string]interface{})
-			item := make(map[string]interface{})
-
-			if val, ok := tf_opt["min_value"]; ok {
-				if val.(int) == math.MinInt32 {
-					item["min"] = nil
-				} else {
-					item["min"] = val.(int)
-				}
-			}
-			if val, ok := tf_opt["max_value"]; ok {
-				if val.(int) == math.MaxInt32 {
-					item["max"] = nil
-				} else {
-					item["max"] = val.(int)
-				}
-			}
-			if val, ok := tf_opt["label"]; ok {
-				item["label"] = val.(string)
-			}
-			if val, ok := tf_opt["high_watermark"]; ok {
-				if val.(int) == math.MaxInt32 {
-					item["highWatermark"] = nil
-				} else {
-					item["highWatermark"] = val.(int)
-				}
-			}
-			if val, ok := tf_opt["low_watermark"]; ok {
-				if val.(int) == math.MinInt32 {
-					item["lowWatermark"] = nil
-				} else {
-					item["lowWatermark"] = val.(int)
-				}
-			}
-			axes_list_opts[i] = item
-		}
-		return axes_list_opts
+	axes_list_opts := make([]map[string]interface{}, 2)
+	if tf_axis_opts, ok := d.GetOk("axis_right"); ok {
+		tf_right_axis_opts := tf_axis_opts.(*schema.Set).List()[0]
+		tf_opt := tf_right_axis_opts.(map[string]interface{})
+		axes_list_opts[1] = getSingleAxisOptions(tf_opt)
 	}
-	return nil
+	if tf_axis_opts, ok := d.GetOk("axis_left"); ok {
+		tf_left_axis_opts := tf_axis_opts.(*schema.Set).List()[0]
+		tf_opt := tf_left_axis_opts.(map[string]interface{})
+		axes_list_opts[0] = getSingleAxisOptions(tf_opt)
+	}
+	return axes_list_opts
+}
+
+func getSingleAxisOptions(axisOpt map[string]interface{}) map[string]interface{} {
+	item := make(map[string]interface{})
+
+	if val, ok := axisOpt["min_value"]; ok {
+		if val.(int) == math.MinInt32 {
+			item["min"] = nil
+		} else {
+			item["min"] = val.(int)
+		}
+	}
+	if val, ok := axisOpt["max_value"]; ok {
+		if val.(int) == math.MaxInt32 {
+			item["max"] = nil
+		} else {
+			item["max"] = val.(int)
+		}
+	}
+	if val, ok := axisOpt["label"]; ok {
+		item["label"] = val.(string)
+	}
+	if val, ok := axisOpt["high_watermark"]; ok {
+		if val.(int) == math.MaxInt32 {
+			item["highWatermark"] = nil
+		} else {
+			item["highWatermark"] = val.(int)
+		}
+	}
+	if val, ok := axisOpt["low_watermark"]; ok {
+		if val.(int) == math.MinInt32 {
+			item["lowWatermark"] = nil
+		} else {
+			item["lowWatermark"] = val.(int)
+		}
+	}
+	return item
 }
 
 func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
@@ -314,6 +373,9 @@ func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 	viz["stacked"] = d.Get("stacked").(bool)
 	if val, ok := d.GetOk("plot_type"); ok {
 		viz["defaultPlotType"] = val.(string)
+	}
+	if val, ok := d.GetOk("axes_precision"); ok {
+		viz["axisPrecision"] = val.(int)
 	}
 
 	programOptions := make(map[string]interface{})
@@ -420,7 +482,18 @@ func validateTimeChartColor(v interface{}, k string) (we []string, errors []erro
 			keys = append(keys, k)
 		}
 		joinedColors := strings.Join(keys, ",")
-		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s LEN: %d", value, joinedColors, len(PaletteColors)))
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s", value, joinedColors))
+	}
+	return
+}
+
+/*
+  Validates the color field against a list of allowed words.
+*/
+func validateAxisTimeChart(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if value != "right" && value != "left" {
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either right or left", value))
 	}
 	return
 }
