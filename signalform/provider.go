@@ -6,11 +6,24 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"io/ioutil"
+	"os"
+	"os/user"
 )
+
+type signalformConfig struct {
+	SfxToken string `json:"auth_token"`
+}
 
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
-		Schema: map[string]*schema.Schema{},
+		Schema: map[string]*schema.Schema{
+			"auth_token": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("SFX_AUTH_TOKEN", nil),
+				Description: "SignalFx auth token",
+			},
+		},
 		ResourcesMap: map[string]*schema.Resource{
 			"signalform_detector":           detectorResource(),
 			"signalform_time_chart":         timeChartResource(),
@@ -26,18 +39,34 @@ func Provider() terraform.ResourceProvider {
 }
 
 func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
-	jsonFile, err := ioutil.ReadFile("config.json")
-	if err != nil {
-		return nil, fmt.Errorf("Failed opening config file", err.Error())
+	// environment first
+	if token, ok := data.GetOk("auth_token"); ok {
+		return &signalformConfig{SfxToken: token.(string)}, nil
 	}
-	var config signalformConfig
-	err = json.Unmarshal(jsonFile, &config)
+
+	// $HOME/.signalfx.conf second
+	usr, err := user.Current()
 	if err != nil {
-		return nil, fmt.Errorf("Failed parsing config file", err.Error())
+		return nil, fmt.Errorf("Failed to get user environment", err.Error())
 	}
-	return &config, nil
+	configPath := usr.HomeDir + "/.signalfx.conf"
+	if _, err := os.Stat(configPath); err == nil {
+		return readConfigFile(configPath)
+	}
+
+	// /etc/signalfx.conf last
+	return readConfigFile("/etc/signalfx.conf")
 }
 
-type signalformConfig struct {
-	SfxToken string `json:"sfx_token"`
+func readConfigFile(configPath string) (interface{}, error) {
+	var config signalformConfig
+	configFile, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("Failed opening config file. ", err.Error())
+	}
+	err = json.Unmarshal(configFile, &config)
+	if err != nil {
+		return nil, fmt.Errorf("Failed parsing config file. ", err.Error())
+	}
+	return &config, nil
 }
