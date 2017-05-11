@@ -16,7 +16,26 @@ func TestProvider(t *testing.T) {
 	}
 }
 
+func TestProviderConfigureEmptyConfig(t *testing.T) {
+	SystemConfigPath = "filedoesnotexist"
+	HomeConfigSuffix = "/.filedoesnotexist"
+	rp := Provider()
+	raw := map[string]interface{}{}
+
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
+	}
+
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "auth_token: required field is not set")
+
+}
+
 func TestProviderConfigureFromTerraform(t *testing.T) {
+	SystemConfigPath = "filedoesnotexist"
+	HomeConfigSuffix = "/.filedoesnotexist"
 	rp := Provider()
 	raw := map[string]interface{}{
 		"auth_token": "XXX",
@@ -34,10 +53,12 @@ func TestProviderConfigureFromTerraform(t *testing.T) {
 	}
 
 	configuration := meta.(*signalformConfig)
-	assert.Equal(t, "XXX", configuration.SfxToken)
+	assert.Equal(t, "XXX", configuration.AuthToken)
 }
 
 func TestProviderConfigureFromEnvironment(t *testing.T) {
+	SystemConfigPath = "filedoesnotexist"
+	HomeConfigSuffix = "/.filedoesnotexist"
 	rp := Provider()
 	raw := make(map[string]interface{})
 	os.Setenv("SFX_AUTH_TOKEN", "XXX")
@@ -55,7 +76,7 @@ func TestProviderConfigureFromEnvironment(t *testing.T) {
 	}
 
 	configuration := meta.(*signalformConfig)
-	assert.Equal(t, "XXX", configuration.SfxToken)
+	assert.Equal(t, "XXX", configuration.AuthToken)
 }
 
 /*
@@ -68,7 +89,7 @@ func TestSignalformConfigureFromData(t *testing.T) {
 	data := TestResourceDataRaw(t, rp.Schema, raw)
 	configuration, err := signalformConfigure(data)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "XXX", configuration.(*signalformConfig).SfxToken)
+	assert.Equal(t, "XXX", configuration.(*signalformConfig).AuthToken)
 }
 
 func TestSignalformConfigureFromHomeFile(t *testing.T) {
@@ -78,7 +99,7 @@ func TestSignalformConfigureFromHomeFile(t *testing.T) {
 	configuration, err := signalformConfigure(data)
 	// mock reading home file somehow
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "XXX", configuration.(*signalformConfig).SfxToken)
+	assert.Equal(t, "XXX", configuration.(*signalformConfig).AuthToken)
 }
 
 func TestSignalformConfigureFromSystemFile(t *testing.T) {
@@ -88,27 +109,30 @@ func TestSignalformConfigureFromSystemFile(t *testing.T) {
 	configuration, err := signalformConfigure(data)
 	// mock reading home file somehow
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "XXX", configuration.(*signalformConfig).SfxToken)
+	assert.Equal(t, "XXX", configuration.(*signalformConfig).AuthToken)
 }
 */
 
 func TestSignalformConfigureFileNotFound(t *testing.T) {
-	_, err := readConfigFile("foo.conf")
-	assert.Contains(t, err.Error(), "Failed opening config file")
+	config := signalformConfig{}
+	err := readConfigFile("foo.conf", &config)
+	assert.Contains(t, err.Error(), "Failed to open config file")
 }
 
 func TestSignalformConfigureParseError(t *testing.T) {
+	config := signalformConfig{}
 	tmpfile, err := ioutil.TempFile(os.TempDir(), "signalform")
 	if err != nil {
 		t.Fatalf("Error creating temporary test file. err: %s", err.Error())
 	}
 	defer os.Remove(tmpfile.Name())
 
-	_, err = readConfigFile(tmpfile.Name())
-	assert.Contains(t, err.Error(), "Failed parsing config file")
+	err = readConfigFile(tmpfile.Name(), &config)
+	assert.Contains(t, err.Error(), "Failed to parse config file")
 }
 
 func TestSignalformConfigureSuccess(t *testing.T) {
+	config := signalformConfig{}
 	tmpfile, err := ioutil.TempFile(os.TempDir(), "signalform")
 	if err != nil {
 		t.Fatalf("Error creating temporary test file. err: %s", err.Error())
@@ -120,8 +144,7 @@ func TestSignalformConfigureSuccess(t *testing.T) {
 		t.Fatalf("Error writing to temporary test file. err: %s", err.Error())
 	}
 
-	meta, err := readConfigFile(tmpfile.Name())
+	err = readConfigFile(tmpfile.Name(), &config)
 	assert.Nil(t, err)
-	configuration := meta.(*signalformConfig)
-	assert.Equal(t, "XXX", configuration.SfxToken)
+	assert.Equal(t, "XXX", config.AuthToken)
 }

@@ -145,14 +145,14 @@ func listchartCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 
-	return resourceCreate(CHART_API_URL, config.SfxToken, payload, d)
+	return resourceCreate(CHART_API_URL, config.AuthToken, payload, d)
 }
 
 func listchartRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 
-	return resourceRead(url, config.SfxToken, d)
+	return resourceRead(url, config.AuthToken, d)
 }
 
 func listchartUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -163,12 +163,12 @@ func listchartUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 
-	return resourceUpdate(url, config.SfxToken, payload, d)
+	return resourceUpdate(url, config.AuthToken, payload, d)
 }
 
 func listchartDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", CHART_API_URL, d.Id())
 
-	return resourceDelete(url, config.SfxToken, d)
+	return resourceDelete(url, config.AuthToken, d)
 }

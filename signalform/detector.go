@@ -220,14 +220,14 @@ func detectorCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 
-	return resourceCreate(DETECTOR_API_URL, config.SfxToken, payload, d)
+	return resourceCreate(DETECTOR_API_URL, config.AuthToken, payload, d)
 }
 
 func detectorRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", DETECTOR_API_URL, d.Id())
 
-	return resourceRead(url, config.SfxToken, d)
+	return resourceRead(url, config.AuthToken, d)
 }
 
 func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -238,14 +238,14 @@ func detectorUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	url := fmt.Sprintf("%s/%s", DETECTOR_API_URL, d.Id())
 
-	return resourceUpdate(url, config.SfxToken, payload, d)
+	return resourceUpdate(url, config.AuthToken, payload, d)
 }
 
 func detectorDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", DETECTOR_API_URL, d.Id())
 
-	return resourceDelete(url, config.SfxToken, d)
+	return resourceDelete(url, config.AuthToken, d)
 }
 
 /*

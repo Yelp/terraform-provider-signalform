@@ -10,8 +10,11 @@ import (
 	"os/user"
 )
 
+var SystemConfigPath = "/etc/signalfx.conf"
+var HomeConfigSuffix = "/.signalfx.conf"
+
 type signalformConfig struct {
-	SfxToken string `json:"auth_token"`
+	AuthToken string `json:"auth_token"`
 }
 
 func Provider() terraform.ResourceProvider {
@@ -19,8 +22,8 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{
 			"auth_token": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SFX_AUTH_TOKEN", nil),
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("SFX_AUTH_TOKEN", ""),
 				Description: "SignalFx auth token",
 			},
 		},
@@ -39,34 +42,50 @@ func Provider() terraform.ResourceProvider {
 }
 
 func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
-	// environment first
-	if token, ok := data.GetOk("auth_token"); ok {
-		return &signalformConfig{SfxToken: token.(string)}, nil
+	config := signalformConfig{}
+
+	// /etc/signalfx.conf has lowest priority
+	if _, err := os.Stat(SystemConfigPath); err == nil {
+		err = readConfigFile(SystemConfigPath, &config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// $HOME/.signalfx.conf second
 	usr, err := user.Current()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get user environment", err.Error())
+		return nil, fmt.Errorf("Failed to get user environment %s", err.Error())
 	}
-	configPath := usr.HomeDir + "/.signalfx.conf"
-	if _, err := os.Stat(configPath); err == nil {
-		return readConfigFile(configPath)
+	configPath := usr.HomeDir + HomeConfigSuffix
+	if _, err = os.Stat(configPath); err == nil {
+		err = readConfigFile(configPath, &config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// /etc/signalfx.conf last
-	return readConfigFile("/etc/signalfx.conf")
+	// environment first
+	if token, ok := data.GetOk("auth_token"); ok {
+		config.AuthToken = token.(string)
+	}
+
+	if config.AuthToken == "" {
+		return &config, fmt.Errorf("auth_token: required field is not set")
+	}
+
+	return &config, nil
+
 }
 
-func readConfigFile(configPath string) (interface{}, error) {
-	var config signalformConfig
+func readConfigFile(configPath string, config *signalformConfig) error {
 	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed opening config file. ", err.Error())
+		return fmt.Errorf("Failed to open config file. %s", err.Error())
 	}
-	err = json.Unmarshal(configFile, &config)
+	err = json.Unmarshal(configFile, config)
 	if err != nil {
-		return nil, fmt.Errorf("Failed parsing config file. ", err.Error())
+		return fmt.Errorf("Failed to parse config file. %s", err.Error())
 	}
-	return &config, nil
+	return nil
 }
