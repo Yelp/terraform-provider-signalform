@@ -62,14 +62,14 @@ func dashboardgroupCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 
-	return resourceCreate(DASHBOARD_GROUP_API_URL, config.SfxToken, payload, d)
+	return resourceCreate(DASHBOARD_GROUP_API_URL, config.AuthToken, payload, d)
 }
 
 func dashboardgroupRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", DASHBOARD_GROUP_API_URL, d.Id())
 
-	return resourceRead(url, config.SfxToken, d)
+	return resourceRead(url, config.AuthToken, d)
 }
 
 func dashboardgroupUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -80,11 +80,11 @@ func dashboardgroupUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	url := fmt.Sprintf("%s/%s", DASHBOARD_GROUP_API_URL, d.Id())
 
-	return resourceUpdate(url, config.SfxToken, payload, d)
+	return resourceUpdate(url, config.AuthToken, payload, d)
 }
 
 func dashboardgroupDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*signalformConfig)
 	url := fmt.Sprintf("%s/%s", DASHBOARD_GROUP_API_URL, d.Id())
-	return resourceDelete(url, config.SfxToken, d)
+	return resourceDelete(url, config.AuthToken, d)
 }
