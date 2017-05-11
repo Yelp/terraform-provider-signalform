@@ -1,8 +1,8 @@
 .PHONY: itest_% clean shell
 PROJECT = terraform-provider-signalform
 
-VERSION = 1.7
-ITERATION = yelp1
+VERSION = 1.8
+ITERATION = yelp0
 TF_VERSION = 0.7
 
 PACKAGE_NAME := $(PROJECT)-$(TF_VERSION)_$(VERSION)-$(ITERATION)_amd64.deb
