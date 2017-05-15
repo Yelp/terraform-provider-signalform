@@ -234,3 +234,19 @@ func fromRangeToMilliSeconds(timeRange string) (int, error) {
 	}
 	return val * c, nil
 }
+
+/*
+  Validates the color field against a list of allowed words.
+*/
+func validatePerSignalColor(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	if _, ok := PaletteColors[value]; !ok {
+		keys := make([]string, 0, len(PaletteColors))
+		for k := range PaletteColors {
+			keys = append(keys, k)
+		}
+		joinedColors := strings.Join(keys, ",")
+		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s", value, joinedColors))
+	}
+	return
+}

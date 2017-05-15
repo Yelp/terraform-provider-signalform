@@ -94,6 +94,26 @@ func singleValueChartResource() *schema.Resource {
 					},
 				},
 			},
+			"viz_options": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Plot-level customization options, associated with a publish statement",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"label": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The label used in the publish statement that displays the plot (metric time series data) you want to customize",
+						},
+						"color": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Color to use",
+							ValidateFunc: validatePerSignalColor,
+						},
+					},
+				},
+			},
 		},
 
 		Create: singlevaluechartCreate,
@@ -114,6 +134,9 @@ func getPayloadSingleValueChart(d *schema.ResourceData) ([]byte, error) {
 	}
 
 	viz := getSingleValueChartOptions(d)
+	if vizOptions := getPerSignalVizOptions(d); len(vizOptions) > 0 {
+		viz["publishLabelOptions"] = vizOptions
+	}
 	if len(viz) > 0 {
 		payload["options"] = viz
 	}
