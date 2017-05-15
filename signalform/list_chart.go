@@ -78,6 +78,26 @@ func listChartResource() *schema.Resource {
 				Optional:    true,
 				Description: "The maximum precision to for values displayed in the list",
 			},
+			"viz_options": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Plot-level customization options, associated with a publish statement",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"label": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The label used in the publish statement that displays the plot (metric time series data) you want to customize",
+						},
+						"color": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Color to use",
+							ValidateFunc: validatePerSignalColor,
+						},
+					},
+				},
+			},
 		},
 
 		Create: listchartCreate,
@@ -100,6 +120,9 @@ func getPayloadListChart(d *schema.ResourceData) ([]byte, error) {
 	viz := getListChartOptions(d)
 	if legendOptions := getLegendOptions(d); len(legendOptions) > 0 {
 		viz["legendOptions"] = legendOptions
+	}
+	if vizOptions := getPerSignalVizOptions(d); len(vizOptions) > 0 {
+		viz["publishLabelOptions"] = vizOptions
 	}
 	if len(viz) > 0 {
 		payload["options"] = viz
