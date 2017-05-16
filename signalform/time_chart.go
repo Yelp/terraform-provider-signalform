@@ -106,15 +106,15 @@ func timeChartResource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min_value": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MinInt32,
+							Default:     -math.MaxFloat32,
 							Description: "The minimum value for the right axis",
 						},
 						"max_value": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxInt32,
+							Default:     math.MaxFloat32,
 							Description: "The maximum value for the right axis",
 						},
 						"label": &schema.Schema{
@@ -123,15 +123,15 @@ func timeChartResource() *schema.Resource {
 							Description: "Label of the right axis",
 						},
 						"high_watermark": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxInt32,
+							Default:     math.MaxFloat32,
 							Description: "A line to draw as a high watermark",
 						},
 						"low_watermark": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MinInt32,
+							Default:     -math.MaxFloat32,
 							Description: "A line to draw as a low watermark",
 						},
 					},
@@ -143,15 +143,15 @@ func timeChartResource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min_value": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MinInt32,
+							Default:     -math.MaxFloat32,
 							Description: "The minimum value for the left axis",
 						},
 						"max_value": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxInt32,
+							Default:     math.MaxFloat32,
 							Description: "The maximum value for the left axis",
 						},
 						"label": &schema.Schema{
@@ -160,15 +160,15 @@ func timeChartResource() *schema.Resource {
 							Description: "Label of the left axis",
 						},
 						"high_watermark": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxInt32,
+							Default:     math.MaxFloat32,
 							Description: "A line to draw as a high watermark",
 						},
 						"low_watermark": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MinInt32,
+							Default:     -math.MaxFloat32,
 							Description: "A line to draw as a low watermark",
 						},
 					},
@@ -324,34 +324,34 @@ func getSingleAxisOptions(axisOpt map[string]interface{}) map[string]interface{}
 	item := make(map[string]interface{})
 
 	if val, ok := axisOpt["min_value"]; ok {
-		if val.(int) == math.MinInt32 {
+		if val.(float64) == -math.MaxFloat32 {
 			item["min"] = nil
 		} else {
-			item["min"] = val.(int)
+			item["min"] = val.(float64)
 		}
 	}
 	if val, ok := axisOpt["max_value"]; ok {
-		if val.(int) == math.MaxInt32 {
+		if val.(float64) == math.MaxFloat32 {
 			item["max"] = nil
 		} else {
-			item["max"] = val.(int)
+			item["max"] = val.(float64)
 		}
 	}
 	if val, ok := axisOpt["label"]; ok {
 		item["label"] = val.(string)
 	}
 	if val, ok := axisOpt["high_watermark"]; ok {
-		if val.(int) == math.MaxInt32 {
+		if val.(float64) == math.MaxFloat32 {
 			item["highWatermark"] = nil
 		} else {
-			item["highWatermark"] = val.(int)
+			item["highWatermark"] = val.(float64)
 		}
 	}
 	if val, ok := axisOpt["low_watermark"]; ok {
-		if val.(int) == math.MinInt32 {
+		if val.(float64) == -math.MaxFloat32 {
 			item["lowWatermark"] = nil
 		} else {
-			item["lowWatermark"] = val.(int)
+			item["lowWatermark"] = val.(float64)
 		}
 	}
 	return item
