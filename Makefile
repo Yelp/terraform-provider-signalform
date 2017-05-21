@@ -27,6 +27,7 @@ clean:
 terraform-provider-signalform: test
 	mkdir -p $(GOPATH)/bin
 	cd $(BASE) && go build -o $(GOPATH)/bin/terraform-provider-signalform
+	cp /opt/terraform-0.7/bin/terraform bin/
 
 integration:
 	make -C test
