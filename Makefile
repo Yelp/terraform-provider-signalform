@@ -5,6 +5,7 @@ PATH    := $(GOPATH)/bin:$(PATH)
 GLIDE   := glide
 export GOPATH
 export PATH
+unexport GOROOT
 
 .PHONY: all fmt .git/hooks/pre-commit terraform-provider-ddns clean package test itest_%
 all: fmt .git/hooks/pre-commit test terraform-provider-signalform
