@@ -1,0 +1,13 @@
+package: terraform-provider-signalform
+import:
+- package: github.com/hashicorp/terraform
+  version: 0.7.13
+  subpackages:
+  - helper/hashcode
+  - helper/schema
+  - plugin
+  - terraform
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert

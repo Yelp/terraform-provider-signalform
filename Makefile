@@ -1,22 +1,34 @@
-.PHONY: all fmt .git/hooks/pre-commit terraform-provider-ddns clean package test itest_%
+PACKAGE := terraform-provider-signalform
+GOPATH  := $(shell pwd -L)
+BASE    := $(GOPATH)/src/$(PACKAGE)
+PATH    := $(GOPATH)/bin:$(PATH)
+GLIDE   := glide
+export GOPATH
+export PATH
 
+.PHONY: all fmt .git/hooks/pre-commit terraform-provider-ddns clean package test itest_%
 all: fmt .git/hooks/pre-commit test terraform-provider-signalform
 
 fmt:
 	go fmt ./...
 
+deps:
+	@echo Getting dependencies...
+	@go get github.com/Masterminds/glide
+	@cd src/github.com/Masterminds/glide && git checkout --quiet v0.12.3
+	@go build -o bin/glide github.com/Masterminds/glide/
+	@cd $(BASE) && $(GLIDE) install
+
 clean:
+	rm -rf bin
+	rm -rf pkg
 	make -C yelppack clean
-	rm -f terraform-provider-signalform
-	rm -rf test/example.git test/checkout test/terraform.tfstate.backup test/terraform.tfstate
 
 terraform-provider-signalform: test
-	go build
+	mkdir -p $(GOPATH)/bin
+	cd $(BASE) && go build -o $(GOPATH)/bin/terraform-provider-signalform
 
-dev: terraform-provider-signalform
-	cp terraform-provider-signalform $$(echo $$GOPATH|sed -e's/://')/bin
-
-integration: dev
+integration:
 	make -C test
 
 itest_%:
@@ -25,13 +37,11 @@ itest_%:
 
 package: itest_lucid
 
-test:
-	go test -v ./signalform/...
+test: deps
+	cd $(BASE) && go test -v $$(glide novendor)
 
 itest_%:
-		make -C yelppack $@
-
+	make -C yelppack $@
 
 .git/hooks/pre-commit:
 	if [ ! -f .git/hooks/pre-commit ]; then ln -s ../../git-hooks/pre-commit .git/hooks/pre-commit; fi
-

@@ -1,6 +1,7 @@
-src/
 pkg/
+bin/
 dist/
+src/github.com/
 .docker_container_id
 .docker_image_id
-terraform-provider-signalform
+*.lock
