@@ -5,9 +5,10 @@ PATH    := $(GOPATH)/bin:$(PATH)
 GLIDE   := glide
 export GOPATH
 export PATH
+# unset GOROOT avoids: "go test error: cannot use matchString as type testing.testDeps in argument to testing.MainStart"
 unexport GOROOT
 
-.PHONY: all fmt .git/hooks/pre-commit terraform-provider-ddns clean package test itest_%
+.PHONY: all fmt terraform-provider-ddns clean package test itest_%
 all: fmt .git/hooks/pre-commit test terraform-provider-signalform
 
 fmt:
@@ -28,7 +29,7 @@ clean:
 terraform-provider-signalform: test
 	mkdir -p $(GOPATH)/bin
 	cd $(BASE) && go build -o $(GOPATH)/bin/terraform-provider-signalform
-	cp /opt/terraform-0.7/bin/terraform bin/
+	cp /nail/opt/terraform-0.7/bin/terraform bin/
 
 integration:
 	make -C test
