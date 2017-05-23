@@ -179,6 +179,11 @@ func timeChartResource() *schema.Resource {
 				Optional:    true,
 				Description: "Force a specific number of significant digits in the y-axis",
 			},
+			"on_chart_legend_dimension": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Dimension to show in the on-chart legend. On-chart legend is off unless a dimension is specified. Allowed: 'metric', 'plot_label' and any dimension.",
+			},
 			"legend_fields_to_hide": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -268,6 +273,17 @@ func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 	}
 	if vizOptions := getPerSignalVizOptions(d); len(vizOptions) > 0 {
 		viz["publishLabelOptions"] = vizOptions
+	}
+	if onChartLegendDim, ok := d.GetOk("on_chart_legend_dimension"); ok {
+		if onChartLegendDim == "metric" {
+			onChartLegendDim = "sf_originatingMetric"
+		} else if onChartLegendDim == "plot_label" {
+			onChartLegendDim = "sf_metric"
+		}
+		viz["onChartLegendOptions"] = map[string]interface{}{
+			"showLegend":        true,
+			"dimensionInLegend": onChartLegendDim,
+		}
 	}
 	if len(viz) > 0 {
 		payload["options"] = viz
