@@ -1,7 +1,7 @@
 .PHONY: itest_% clean shell
 PROJECT = terraform-provider-signalform
 
-VERSION = 1.9.1
+VERSION = 2.0
 ITERATION = yelp0
 TF_VERSION = 0.7
 
