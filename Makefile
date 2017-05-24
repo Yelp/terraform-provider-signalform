@@ -9,7 +9,7 @@ export PATH
 unexport GOROOT
 
 .PHONY: all fmt terraform-provider-ddns clean package test itest_%
-all: fmt .git/hooks/pre-commit test terraform-provider-signalform
+all: fmt .git/hooks/pre-commit test build
 
 fmt:
 	go fmt ./...
@@ -26,7 +26,7 @@ clean:
 	rm -rf pkg
 	make -C yelppack clean
 
-terraform-provider-signalform: test
+build: test
 	mkdir -p $(GOPATH)/bin
 	cd $(BASE) && go build -o $(GOPATH)/bin/terraform-provider-signalform
 	cp /nail/opt/terraform-0.7/bin/terraform bin/
