@@ -76,7 +76,7 @@ func listChartResource() *schema.Resource {
 			"max_precision": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The maximum precision to for values displayed in the list",
+				Description: "Maximum number of digits to display when rounding values up or down",
 			},
 			"viz_options": &schema.Schema{
 				Type:        schema.TypeSet,
