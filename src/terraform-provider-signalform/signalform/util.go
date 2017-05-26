@@ -250,3 +250,11 @@ func validatePerSignalColor(v interface{}, k string) (we []string, errors []erro
 	}
 	return
 }
+
+/*
+  Sanitize program_text to reduce the errors we get back from SignalFx
+*/
+func sanitizeProgramText(text string) string {
+	r, _ := regexp.Compile("\n+")
+	return r.ReplaceAllString(text, "\n")
+}
