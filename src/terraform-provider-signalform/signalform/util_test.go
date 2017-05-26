@@ -100,3 +100,14 @@ func TestValidateSortByNoDirection(t *testing.T) {
 	_, errors := validateSortBy("foo", "sort_by")
 	assert.Equal(t, 1, len(errors))
 }
+
+func TestSanitizeProgramTextSane(t *testing.T) {
+	text := "previous = data('statmonster.inbound_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).timeshift('2m').sum()\nsignal = data('statmonster.inbo    und_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).sum()\ndetect('Low number of log lines', when(signal < (previous * 0.50), '2m', 0.90))"
+	assert.Equal(t, text, sanitizeProgramText(text))
+}
+
+func TestSanitizeProgramTextBlankLine(t *testing.T) {
+	text := "previous = data('statmonster.inbound_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).timeshift('2m').sum()\n\nsignal = data('statmonster.inbo    und_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).sum()\n\n\ndetect('Low number of log lines', when(signal < (previous * 0.50), '2m', 0.90))"
+	sane_text := "previous = data('statmonster.inbound_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).timeshift('2m').sum()\nsignal = data('statmonster.inbo    und_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).sum()\ndetect('Low number of log lines', when(signal < (previous * 0.50), '2m', 0.90))"
+	assert.Equal(t, sane_text, sanitizeProgramText(text))
+}
