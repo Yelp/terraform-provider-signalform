@@ -3,7 +3,7 @@ PROJECT = terraform-provider-signalform
 
 VERSION = 2.1.2
 ITERATION = yelp0
-TF_VERSION = 0.7
+TF_VERSION = 0.8
 
 PACKAGE_NAME := $(PROJECT)-$(TF_VERSION)_$(VERSION)-$(ITERATION)_amd64.deb
 PACKAGE_FILE := dist/$(PACKAGE_NAME)

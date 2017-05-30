@@ -29,7 +29,7 @@ clean:
 build: test
 	mkdir -p $(GOPATH)/bin
 	cd $(BASE) && go build -o $(GOPATH)/bin/terraform-provider-signalform
-	cp /nail/opt/terraform-0.7/bin/terraform bin/
+	cp /nail/opt/terraform-0.8/bin/terraform bin/
 
 integration:
 	make -C test
