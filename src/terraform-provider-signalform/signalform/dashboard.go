@@ -102,11 +102,11 @@ func dashboardResource() *schema.Resource {
 			"grid": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Grid dashboard layout",
+				Description: "Grid dashboard layout. Charts listed, will be placed in a grid by row with the same width and height. If a chart can't fit in a row, it will be placed automatically in the next row",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"chart_ids": &schema.Schema{
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Charts to use for the grid",
@@ -115,6 +115,12 @@ func dashboardResource() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "Starting row number for the grid",
+							Default:     0,
+						},
+						"start_column": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Starting column number for the grid",
 							Default:     0,
 						},
 						"width": &schema.Schema{
@@ -135,14 +141,14 @@ func dashboardResource() *schema.Resource {
 			"column": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Column layout",
+				Description: "Column layout. Charts listed, will be placed in a single column with the same width and height",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"chart_ids": &schema.Schema{
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Charts to use for the grid",
+							Description: "Charts to use for the column",
 						},
 						"column": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -153,7 +159,7 @@ func dashboardResource() *schema.Resource {
 						"start_row": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "Starting row number for the grid",
+							Description: "Starting row number for the column",
 							Default:     0,
 						},
 						"width": &schema.Schema{
@@ -342,7 +348,7 @@ func getDashboardColumns(d *schema.ResourceData) []map[string]interface{} {
 		column_number := column["column"].(int)
 		width := column["width"].(int)
 		height := column["height"].(int)
-		for _, chart_id := range column["chart_ids"].(*schema.Set).List() {
+		for _, chart_id := range column["chart_ids"].([]interface{}) {
 			item := make(map[string]interface{})
 
 			item["chartId"] = chart_id.(string)
@@ -365,10 +371,10 @@ func getDashboardGrids(d *schema.ResourceData) []map[string]interface{} {
 		grid := grid.(map[string]interface{})
 
 		current_row := grid["start_row"].(int)
-		current_column := 0
+		current_column := grid["start_column"].(int)
 		width := grid["width"].(int)
 		height := grid["height"].(int)
-		for _, chart_id := range grid["chart_ids"].(*schema.Set).List() {
+		for _, chart_id := range grid["chart_ids"].([]interface{}) {
 			item := make(map[string]interface{})
 
 			item["chartId"] = chart_id.(string)
@@ -377,7 +383,7 @@ func getDashboardGrids(d *schema.ResourceData) []map[string]interface{} {
 
 			if current_column+width > 12 {
 				current_row += 1
-				current_column = 0
+				current_column = grid["start_column"].(int)
 			}
 			item["row"] = current_row
 			item["column"] = current_column
