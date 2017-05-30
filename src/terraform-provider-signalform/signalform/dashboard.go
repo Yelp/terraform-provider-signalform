@@ -102,7 +102,7 @@ func dashboardResource() *schema.Resource {
 			"grid": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Grid dashboard layout. Charts listed, will be placed in a grid by row with the same width and height. If a chart can't fit in a row, it will be placed automatically in the next row",
+				Description: "Grid dashboard layout. Charts listed will be placed in a grid by row with the same width and height. If a chart can't fit in a row, it will be placed automatically in the next row",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"chart_ids": &schema.Schema{
