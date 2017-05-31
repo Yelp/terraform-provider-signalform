@@ -106,7 +106,7 @@ func resourceRead(url string, sfxToken string, d *schema.ResourceData) error {
 			d.Set("last_updated", last_updated)
 		}
 	} else {
-		if strings.Contains(string(resp_body), "Resource not found") {
+		if status_code == 404 && strings.Contains(string(resp_body), " not found") {
 			// This implies that the resouce was deleted in the Signalfx UI and therefore we need to recreate it
 			d.SetId("")
 		} else {
