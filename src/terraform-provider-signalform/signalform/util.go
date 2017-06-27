@@ -183,6 +183,11 @@ func getLegendOptions(d *schema.ResourceData) map[string]interface{} {
 		properties_opts := make([]map[string]interface{}, len(properties))
 		for i, property := range properties {
 			property := property.(string)
+			if property == "metric" {
+				property = "sf_originatingMetric"
+			} else if property == "plot_label" || property == "Plot Label" {
+				property = "sf_metric"
+			}
 			item := make(map[string]interface{})
 			item["property"] = property
 			item["enabled"] = false
