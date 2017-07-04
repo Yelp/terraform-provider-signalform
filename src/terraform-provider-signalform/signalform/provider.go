@@ -12,6 +12,7 @@ import (
 
 var SystemConfigPath = "/etc/signalfx.conf"
 var HomeConfigSuffix = "/.signalfx.conf"
+var HomeConfigPath = ""
 
 type signalformConfig struct {
 	AuthToken string `json:"auth_token"`
@@ -53,13 +54,16 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 	}
 
 	// $HOME/.signalfx.conf second
-	usr, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get user environment %s", err.Error())
+	// this additional variable is used for mocking purposes in tests
+	if HomeConfigPath == "" {
+		usr, err := user.Current()
+		HomeConfigPath = usr.HomeDir + HomeConfigSuffix
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get user environment %s", err.Error())
+		}
 	}
-	configPath := usr.HomeDir + HomeConfigSuffix
-	if _, err = os.Stat(configPath); err == nil {
-		err = readConfigFile(configPath, &config)
+	if _, err := os.Stat(HomeConfigPath); err == nil {
+		err = readConfigFile(HomeConfigPath, &config)
 		if err != nil {
 			return nil, err
 		}
