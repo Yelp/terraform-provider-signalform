@@ -69,7 +69,7 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	// environment first
+	// provider first
 	if token, ok := data.GetOk("auth_token"); ok {
 		config.AuthToken = token.(string)
 	}
