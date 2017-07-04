@@ -76,14 +76,15 @@ func singleValueChartResource() *schema.Resource {
 			"color_scale": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Values for each color in the range. Example: { thresholds : [80, 60, 40, 20, 0], inverted : true }",
+				Description: "Values for each color in the range. Example: { thresholds : [80, 60, 40, 0], inverted : true }",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"thresholds": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeInt},
-							Description: "The thresholds to set for the color range being used. Values must be in descending order",
+							MaxItems:    4,
+							Description: "The thresholds to set for the color range being used. Values (at most 4) must be in descending order",
 						},
 						"inverted": &schema.Schema{
 							Type:        schema.TypeBool,
