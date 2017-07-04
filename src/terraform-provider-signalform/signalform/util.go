@@ -71,8 +71,11 @@ func validateSortBy(v interface{}, k string) (we []string, errors []error) {
 */
 func getColorScaleOptions(d *schema.ResourceData) map[string]interface{} {
 	item := make(map[string]interface{})
-	colorScale := d.Get("color_scale").(*schema.Set).List()[0]
-	options := colorScale.(map[string]interface{})
+	colorScale := d.Get("color_scale").(*schema.Set).List()
+	if len(colorScale) == 0 {
+		return item
+	}
+	options := colorScale[0].(map[string]interface{})
 
 	thresholdsList := options["thresholds"].([]interface{})
 	thresholds := make([]int, len(thresholdsList))
