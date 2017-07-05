@@ -1,6 +1,7 @@
 package signalform
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -10,120 +11,253 @@ import (
 	"testing"
 )
 
+var OldSystemConfigPath = SystemConfigPath
+var OldHomeConfigPath = HomeConfigPath
+
+func resetGlobals() {
+	SystemConfigPath = OldSystemConfigPath
+	HomeConfigPath = OldHomeConfigPath
+}
+
+func createTempConfigFile(content string) (*os.File, error) {
+	tmpfile, err := ioutil.TempFile(os.TempDir(), "signalform.conf")
+	if err != nil {
+		return nil, fmt.Errorf("Error creating temporary test file. err: %s", err.Error())
+	}
+
+	_, err = tmpfile.WriteString(content)
+	if err != nil {
+		os.Remove(tmpfile.Name())
+		return nil, fmt.Errorf("Error writing to temporary test file. err: %s", err.Error())
+	}
+
+	return tmpfile, nil
+}
+
 func TestProvider(t *testing.T) {
 	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
-		t.Fatalf("err: %s", err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
-func TestProviderConfigureEmptyConfig(t *testing.T) {
+func TestProviderConfigureFromNothing(t *testing.T) {
+	defer resetGlobals()
 	SystemConfigPath = "filedoesnotexist"
-	HomeConfigSuffix = "/.filedoesnotexist"
-	rp := Provider()
-	raw := map[string]interface{}{}
-
+	HomeConfigPath = "filedoesnotexist"
+	raw := make(map[string]interface{})
 	rawConfig, err := config.NewRawConfig(raw)
 	if err != nil {
 		t.Fatalf("Error creating mock config: %s", err.Error())
 	}
 
+	rp := Provider()
 	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "auth_token: required field is not set")
-
 }
 
 func TestProviderConfigureFromTerraform(t *testing.T) {
-	SystemConfigPath = "filedoesnotexist"
-	HomeConfigSuffix = "/.filedoesnotexist"
-	rp := Provider()
+	defer resetGlobals()
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileSystem.Name())
+	SystemConfigPath = tmpfileSystem.Name()
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileHome.Name())
+	os.Setenv("SFX_AUTH_TOKEN", "YYY")
+	defer os.Unsetenv("SFX_AUTH_TOKEN")
 	raw := map[string]interface{}{
 		"auth_token": "XXX",
 	}
-
 	rawConfig, err := config.NewRawConfig(raw)
 	if err != nil {
 		t.Fatalf("Error creating mock config: %s", err.Error())
 	}
 
+	rp := Provider()
 	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
 	meta := rp.(*schema.Provider).Meta()
 	if meta == nil {
 		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
 	}
+	configuration := meta.(*signalformConfig)
+	assert.Equal(t, "XXX", configuration.AuthToken)
+}
 
+func TestProviderConfigureFromTerraformOnly(t *testing.T) {
+	defer resetGlobals()
+	SystemConfigPath = "filedoesnotexist"
+	HomeConfigPath = "filedoesnotexist"
+	raw := map[string]interface{}{
+		"auth_token": "XXX",
+	}
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
+	}
+
+	rp := Provider()
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	meta := rp.(*schema.Provider).Meta()
+	if meta == nil {
+		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
+	}
 	configuration := meta.(*signalformConfig)
 	assert.Equal(t, "XXX", configuration.AuthToken)
 }
 
 func TestProviderConfigureFromEnvironment(t *testing.T) {
-	SystemConfigPath = "filedoesnotexist"
-	HomeConfigSuffix = "/.filedoesnotexist"
-	rp := Provider()
-	raw := make(map[string]interface{})
-	os.Setenv("SFX_AUTH_TOKEN", "XXX")
+	defer resetGlobals()
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileSystem.Name())
+	SystemConfigPath = tmpfileSystem.Name()
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileHome.Name())
+	os.Setenv("SFX_AUTH_TOKEN", "YYY")
 	defer os.Unsetenv("SFX_AUTH_TOKEN")
-
+	raw := make(map[string]interface{})
 	rawConfig, err := config.NewRawConfig(raw)
 	if err != nil {
 		t.Fatalf("Error creating mock config: %s", err.Error())
 	}
 
+	rp := Provider()
 	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
 	meta := rp.(*schema.Provider).Meta()
 	if meta == nil {
 		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
 	}
-
 	configuration := meta.(*signalformConfig)
-	assert.Equal(t, "XXX", configuration.AuthToken)
+	assert.Equal(t, "YYY", configuration.AuthToken)
 }
 
-/*
-TODO: Upgrade to terraform 0.9 so we can use TestResourceDataRaw and do the testing for real
-func TestSignalformConfigureFromData(t *testing.T) {
-	rp := Provider().(*schema.Provider)
-	raw := map[string]interface{}{
-		"auth_token": "XXX",
+func TestProviderConfigureFromEnvironmentOnly(t *testing.T) {
+	defer resetGlobals()
+	SystemConfigPath = "filedoesnotexist"
+	HomeConfigPath = "filedoesnotexist"
+	os.Setenv("SFX_AUTH_TOKEN", "YYY")
+	defer os.Unsetenv("SFX_AUTH_TOKEN")
+	raw := make(map[string]interface{})
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
 	}
-	data := TestResourceDataRaw(t, rp.Schema, raw)
-	configuration, err := signalformConfigure(data)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "XXX", configuration.(*signalformConfig).AuthToken)
+
+	rp := Provider()
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	meta := rp.(*schema.Provider).Meta()
+	if meta == nil {
+		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
+	}
+	configuration := meta.(*signalformConfig)
+	assert.Equal(t, "YYY", configuration.AuthToken)
 }
 
 func TestSignalformConfigureFromHomeFile(t *testing.T) {
-	rp := Provider().(*schema.Provider)
+	defer resetGlobals()
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileSystem.Name())
+	SystemConfigPath = tmpfileSystem.Name()
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileHome.Name())
+	HomeConfigPath = tmpfileHome.Name()
 	raw := make(map[string]interface{})
-	data := TestResourceDataRaw(t, rp.Schema, raw)
-	configuration, err := signalformConfigure(data)
-	// mock reading home file somehow
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "XXX", configuration.(*signalformConfig).AuthToken)
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
+	}
+
+	rp := Provider()
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	meta := rp.(*schema.Provider).Meta()
+	if meta == nil {
+		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
+	}
+	configuration := meta.(*signalformConfig)
+	assert.Equal(t, "WWW", configuration.AuthToken)
 }
 
-func TestSignalformConfigureFromSystemFile(t *testing.T) {
-	rp := Provider().(*schema.Provider)
+func TestSignalformConfigureFromHomeFileOnly(t *testing.T) {
+	defer resetGlobals()
+	SystemConfigPath = "filedoesnotexist"
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileHome.Name())
+	HomeConfigPath = tmpfileHome.Name()
 	raw := make(map[string]interface{})
-	data := TestResourceDataRaw(t, rp.Schema, raw)
-	configuration, err := signalformConfigure(data)
-	// mock reading home file somehow
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "XXX", configuration.(*signalformConfig).AuthToken)
-}
-*/
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
+	}
 
-func TestSignalformConfigureFileNotFound(t *testing.T) {
+	rp := Provider()
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	meta := rp.(*schema.Provider).Meta()
+	if meta == nil {
+		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
+	}
+	configuration := meta.(*signalformConfig)
+	assert.Equal(t, "WWW", configuration.AuthToken)
+}
+
+func TestSignalformConfigureFromSystemFileOnly(t *testing.T) {
+	defer resetGlobals()
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileSystem.Name())
+	SystemConfigPath = tmpfileSystem.Name()
+	HomeConfigPath = "filedoesnotexist"
+	raw := make(map[string]interface{})
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
+	}
+
+	rp := Provider()
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	meta := rp.(*schema.Provider).Meta()
+	if meta == nil {
+		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
+	}
+	configuration := meta.(*signalformConfig)
+	assert.Equal(t, "ZZZ", configuration.AuthToken)
+}
+
+func TestReadConfigFileFileNotFound(t *testing.T) {
+	SystemConfigPath = "filedoesnotexist"
+	HomeConfigPath = "filedoesnotexist"
+	defer resetGlobals()
 	config := signalformConfig{}
 	err := readConfigFile("foo.conf", &config)
 	assert.Contains(t, err.Error(), "Failed to open config file")
 }
 
-func TestSignalformConfigureParseError(t *testing.T) {
+func TestReadConfigFileParseError(t *testing.T) {
 	config := signalformConfig{}
-	tmpfile, err := ioutil.TempFile(os.TempDir(), "signalform")
+	tmpfile, err := createTempConfigFile(`{"auth_tok`)
 	if err != nil {
-		t.Fatalf("Error creating temporary test file. err: %s", err.Error())
+		t.Fatal(err.Error())
 	}
 	defer os.Remove(tmpfile.Name())
 
@@ -131,18 +265,13 @@ func TestSignalformConfigureParseError(t *testing.T) {
 	assert.Contains(t, err.Error(), "Failed to parse config file")
 }
 
-func TestSignalformConfigureSuccess(t *testing.T) {
+func TestReadConfigFileSuccess(t *testing.T) {
 	config := signalformConfig{}
-	tmpfile, err := ioutil.TempFile(os.TempDir(), "signalform")
+	tmpfile, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"XXX"}`)
 	if err != nil {
-		t.Fatalf("Error creating temporary test file. err: %s", err.Error())
+		t.Fatal(err.Error())
 	}
 	defer os.Remove(tmpfile.Name())
-
-	_, err = tmpfile.WriteString(`{"useless_config":"foo","auth_token":"XXX"}`)
-	if err != nil {
-		t.Fatalf("Error writing to temporary test file. err: %s", err.Error())
-	}
 
 	err = readConfigFile(tmpfile.Name(), &config)
 	assert.Nil(t, err)
