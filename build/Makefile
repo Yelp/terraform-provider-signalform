@@ -6,11 +6,11 @@ ifdef upstream_build_number
 else
 	REAL_BUILD_NUMBER?=$(BUILD_NUMBER)
 endif
-ITERATION_PREFIX ?= default
+ORG ?= default
 
 VERSION := 2.2.4
 TF_VERSION := 0.9
-ITERATION := $(ITERATION_PREFIX)$(REAL_BUILD_NUMBER)
+ITERATION := $(ORG)$(REAL_BUILD_NUMBER)
 
 TF_PATH ?= /nail/opt/terraform-$(TF_VERSION)
 
@@ -26,7 +26,7 @@ CLEAN_CONTAINER := [ -e .docker_container_id ] && docker rm --force $$(cat .dock
 
 .PHONY: itest_%
 itest_%: $(PACKAGE_FILE)
-ifeq ($(ITERATION_PREFIX),yelp)
+ifeq ($(ORG),yelp)
 	$(eval DOCKER_BASE := docker-dev.yelpcorp.com/$*_yelp:latest)
 else
 	$(eval DOCKER_BASE := ubuntu:$*)
