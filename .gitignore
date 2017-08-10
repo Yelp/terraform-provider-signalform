@@ -1,3 +1,4 @@
+terraform-provider-signalform
 pkg/
 bin/
 dist/
@@ -5,6 +6,13 @@ src/github.com/
 src/terraform-provider-signalform/vendor/
 .docker_container_id
 .docker_image_id
+yelppack/.docker_container_id
+yelppack/.docker_image_id
+build/.docker_container_id
+build/.docker_image_id
+terraform.tfstate
+terraform.tfstate.backup
+crash.log
 *.lock
 *.swp
 *.swo

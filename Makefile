@@ -8,12 +8,19 @@ export PATH
 # unset GOROOT avoids: "go test error: cannot use matchString as type testing.testDeps in argument to testing.MainStart"
 unexport GOROOT
 
-.PHONY: all fmt terraform-provider-ddns clean package test itest_%
+GOOS ?= linux
+GOARCH ?= amd64
+export GOOS
+export GOARCH
+
+.PHONY: all
 all: fmt .git/hooks/pre-commit test build
 
+.PHONY: fmt
 fmt:
 	go fmt ./...
 
+.PHONY: deps
 deps:
 	@echo Getting dependencies...
 	@go get github.com/Masterminds/glide
@@ -21,30 +28,37 @@ deps:
 	@go build -o bin/glide github.com/Masterminds/glide/
 	@cd $(BASE) && $(GLIDE) install
 
+.PHONY: clean
 clean:
 	rm -rf bin
 	rm -rf pkg
 	make -C yelppack clean
 
+.PHONY: build
 build: test
 	mkdir -p $(GOPATH)/bin
 	cd $(BASE) && go build -o $(GOPATH)/bin/terraform-provider-signalform
-	cp /nail/opt/terraform-0.9/bin/terraform bin/
 
+.PHONY: integration
 integration:
 	make -C test
 
+.PHONY: itest_%
 itest_%:
 	mkdir -p dist
 	make -C yelppack $@
 
-package: itest_lucid
+.PHONY: package
+package: itest_lucid itest_trusty itest_xenial
 
+.PHONY: binary
+binary:
+	mkdir -p dist
+	make -C yelppack binary
+
+.PHONY: test
 test: deps
 	cd $(BASE) && go test -v $$(glide novendor)
-
-itest_%:
-	make -C yelppack $@
 
 .git/hooks/pre-commit:
 	if [ ! -f .git/hooks/pre-commit ]; then ln -s ../../git-hooks/pre-commit .git/hooks/pre-commit; fi

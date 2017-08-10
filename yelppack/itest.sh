@@ -2,5 +2,9 @@
 
 set -eu
 
-dpkg -i "$1"
-test -x /nail/opt/terraform-$2/bin/terraform-provider-signalform
+
+pkg_file=$1
+tf_path=$2
+
+dpkg -i "$pkg_file"
+test -x "${tf_path}"/bin/terraform-provider-signalform
