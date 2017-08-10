@@ -32,7 +32,7 @@ deps:
 clean:
 	rm -rf bin
 	rm -rf pkg
-	make -C yelppack clean
+	make -C build clean
 
 .PHONY: build
 build: test
@@ -46,7 +46,7 @@ integration:
 .PHONY: itest_%
 itest_%:
 	mkdir -p dist
-	make -C yelppack $@
+	make -C build $@
 
 .PHONY: package
 package: itest_lucid itest_trusty itest_xenial
@@ -54,7 +54,7 @@ package: itest_lucid itest_trusty itest_xenial
 .PHONY: binary
 binary:
 	mkdir -p dist
-	make -C yelppack binary
+	make -C build binary
 
 .PHONY: test
 test: deps
