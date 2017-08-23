@@ -5,6 +5,9 @@ src/github.com/
 src/terraform-provider-signalform/vendor/
 .docker_container_id
 .docker_image_id
+terraform.tfstate
+terraform.tfstate.backup
+crash.log
 *.lock
 *.swp
 *.swo
