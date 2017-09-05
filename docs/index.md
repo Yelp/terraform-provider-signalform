@@ -14,7 +14,7 @@ Documentation is available [here](https://yelp.github.io/terraform-provider-sign
 
 
 * Resources
-    * [Detector](docs/resources/detector.md)
+    * [Detector](resources/detector.md)
     * [Chart](docs/resources/chart.md)
         * [Time Chart](docs/resources/time_chart.md)
         * [List Chart](docs/resources/time_chart.md)
