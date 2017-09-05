@@ -44,7 +44,6 @@ variable "clusters" {
 
 * `name` - (Required) Name of the detector.
 * `program_text` - (Required) Signalflow program text for the detector. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
-
 * `description` - (Optional) Description of the detector.
 * `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#late-datapoints> for more info. Max value is `900` seconds (15 minutes).
 * `show_data_markers` - (Optional) When `true`, markers will be drawn for each datapoint within the visualization. `false` by default.
