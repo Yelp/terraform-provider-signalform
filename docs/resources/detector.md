@@ -46,13 +46,13 @@ variable "clusters" {
 * `program_text` - (Required) Signalflow program text for the detector. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
 
 * `description` - (Optional) Description of the detector.
-* `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#late-datapoints> for more info. Max value is 900 seconds (15 minutes)
-* `show_data_markers` - (Optional) When true, markers will be drawn for each datapoint within the visualization. false by default.
+* `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#late-datapoints> for more info. Max value is `900` seconds (15 minutes).
+* `show_data_markers` - (Optional) When `true`, markers will be drawn for each datapoint within the visualization. `false` by default.
 * `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. -5m, -1h). Conflicts with `start_time` and `end_time`.
 * `start_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `end_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `rule` - (Required) Set of rules used for alerting.
-    * `detect_label` - (Required) A detect label which matches a detect label within the program text.
+    * `detect_label` - (Required) A detect label which matches a detect label within `program_text`.
     * `severity` - (Required) The severity of the rule, must be one of: `"Critical"`, `"Warning"`, `"Major"`, `"Minor"`, `"Info"`.
     * `disabled` - (Optional) When true, notifications and events will not be generated for the detect label. `false` by default.
     * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/v2/docs/detector-model#notifications-models> for more info.
@@ -61,7 +61,7 @@ variable "clusters" {
 
 It is highly recommended that you use both `max_delay` in your detector configuration and an `extrapolation` policy in your program text to reduce false positives/negatives.
 
-`max_delay allows` SignalFx to continue with computation if there is a lag in receiving data points.
+`max_delay` allows SignalFx to continue with computation if there is a lag in receiving data points.
 
 `extrapolation` allows you to specify how to handle missing data. An extrapolation policy can be added to individual signals by updating the data block in your `program_text`.
 
