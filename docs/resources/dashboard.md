@@ -2,7 +2,7 @@
 
 A dashboard is a curated collection of specific charts and supports dimensional [filters](http://docs.signalfx.com/en/latest/dashboards/dashboard-filter-dynamic.html#filter-dashboard-charts), [dashboard variables](http://docs.signalfx.com/en/latest/dashboards/dashboard-filter-dynamic.html#dashboard-variables) and [time range](http://docs.signalfx.com/en/latest/_sidebars-and-includes/using-time-range-selector.html#time-range-selector) options. These options are applied to all charts in the dashboard, providing a consistent view of the data displayed in that dashboard. This also means that when you open a chart to drill down for more details, you are viewing the same data that is visible in the dashboard view.
 
-**NOTE:** Since every dashboard is included in a [dashboard group](docs/resources/dashbord_group.md) (SignalFx collection of dashboards), you need to create that first and reference it as shown in the example.
+**NOTE:** Since every dashboard is included in a [dashboard group](resources/dashbord_group.md) (SignalFx collection of dashboards), you need to create that first and reference it as shown in the example.
 
 
 ## Example Usage
