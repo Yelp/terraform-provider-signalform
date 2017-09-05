@@ -36,12 +36,9 @@ resource "signalform_text_chart" "mynote0" {
 
 ## Argument Reference
 
-Argument Reference
-
 The following arguments are supported in the resource block:
 
 * `name` - (Required) Name of the text note.
 * `markdown` - (Required) Markdown text to display.
-
 * `description` - (Optional) Description of the text note.
-* `synced` - (Optional) Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing, you don't need to specify it. Whenever you see a change to this field in the plan, it means that your resource has been changed from the UI and Terraform is now going to re-sync it back to what's in your configuration.
+* `synced` - (Optional) Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing, you do not need to specify it. Whenever you see a change to this field in the plan, it means that your resource has been changed from the UI and Terraform is now going to re-sync it back to what is in your configuration.

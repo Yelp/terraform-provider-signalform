@@ -28,13 +28,10 @@ resource "signalform_heatmap_chart" "myheatmapchart0" {
 
 ## Argument Reference
 
-Argument Reference
-
 The following arguments are supported in the resource block:
 
 * `name` - (Required) Name of the chart.
-* `program_text` - (Required) Signalflow program text for the chart. More info at https://developers.signalfx.com/docs/signalflow-overview.
-
+* `program_text` - (Required) Signalflow program text for the chart. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
 * `description` - (Optional) Description of the chart.
 * `unit_prefix` - (Optional) Must be `"Metric"` or `"Binary`". `"Metric"` by default.
 * `minimum_resolution` - (Optional) The minimum resolution (in seconds) to use for computing the underlying program.

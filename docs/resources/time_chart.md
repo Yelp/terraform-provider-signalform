@@ -42,13 +42,10 @@ resource "signalform_time_chart" "mychart0" {
 
 ## Argument Reference
 
-Argument Reference
-
 The following arguments are supported in the resource block:
 
 * `name` - (Required) Name of the chart.
-* `program_text` - (Required) Signalflow program text for the chart. More info at https://developers.signalfx.com/docs/signalflow-overview.
-
+* `program_text` - (Required) Signalflow program text for the chart. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
 * `plot_type` - (Optional) The default plot display style for the visualization. Must be `"LineChart"`, `"AreaChart"`, `"ColumnChart"`, or `"Histogram"`. Default: `"LineChart"`.
 * `description` - (Optional) Description of the chart.
 * `unit_prefix` - (Optional) Must be `"Metric"` or `"Binary`". `"Metric"` by default.
@@ -56,7 +53,7 @@ The following arguments are supported in the resource block:
 * `minimum_resolution` - (Optional) The minimum resolution (in seconds) to use for computing the underlying program.
 * `max_delay - (Optional) How long (in seconds) to wait for late datapoints.
 * `disable_sampling` - (Optional) If `false`, samples a subset of the output MTS, which improves UI performance. `false` by default
-* `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. -5m, -1h). Conflicts with `start_time` and `end_time`.
+* `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. `"-5m"`, `"-1h"`). Conflicts with `start_time` and `end_time`.
 * `start_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `end_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `axis_left` - (Optional) Set of axis options.

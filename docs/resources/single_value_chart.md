@@ -32,17 +32,14 @@ resource "signalform_single_value_chart" "mysvchart0" {
 
 ## Argument Reference
 
-Argument Reference
-
 The following arguments are supported in the resource block:
 
 * `name` - (Required) Name of the chart.
-* `program_text` - (Required) Signalflow program text for the chart. More info at https://developers.signalfx.com/docs/signalflow-overview.
-
+* `program_text` - (Required) Signalflow program text for the chart. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
 * `description` - (Optional) Description of the chart.
 * `color_by` - (Optional) Must be `"Dimension"` or `"Metric"`. `"Dimension"` by default.
 * `color_scale` - (Optional. `color_by` must be `"Scale"`) Values for each color in the range. Example: `{ thresholds : [ 80, 60, 40, 20, 0 ], inverted : true }`. Look at this [link](https://docs.signalfx.com/en/latest/charts/chart-options-tab.html).
-    * `thresholds` - (Required) The thresholds to set for the color range being used. Values (at most 4) must be in descending order.
+    * `thresholds` - (Required) The thresholds to set for the color range being used. Values (at most `4`) must be in descending order.
     * `inverted` - (Optional) If false or omitted, values are red if they are above the highest specified value. If `true`, values are red if they are below the lowest specified value. `false` by default.
 * `unit_prefix` - (Optional) Must be `"Metric"` or `"Binary"`. `"Metric"` by default.
 * `max_delay - (Optional) How long (in seconds) to wait for late datapoints

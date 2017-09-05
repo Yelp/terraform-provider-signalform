@@ -47,7 +47,7 @@ variable "clusters" {
 * `description` - (Optional) Description of the detector.
 * `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#late-datapoints> for more info. Max value is `900` seconds (15 minutes).
 * `show_data_markers` - (Optional) When `true`, markers will be drawn for each datapoint within the visualization. `false` by default.
-* `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. -5m, -1h). Conflicts with `start_time` and `end_time`.
+* `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. `"-5m"`, `"-1h"`). Conflicts with `start_time` and `end_time`.
 * `start_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `end_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `rule` - (Required) Set of rules used for alerting.

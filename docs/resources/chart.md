@@ -18,4 +18,4 @@ Time chart is the only chart type that includes four different visualization opt
 
 ![Time Chart Types](https://github.com/Yelp/terraform-provider-signalform/raw/master/docs/resources/time_chart_types.jpg)
 
-Just note that if you want to create Area Chart, you need to create a Time Chart Resource and set the property `plot_type = "AreaChart"` (more info [here](/docs/resources/time_chart.md)).
+Just note that if you want to create Area Chart, you need to create a Time Chart Resource and set the property `plot_type = "AreaChart"` (more info [here](time_chart.md)).

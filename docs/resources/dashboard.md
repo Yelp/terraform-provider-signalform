@@ -2,7 +2,7 @@
 
 A dashboard is a curated collection of specific charts and supports dimensional [filters](http://docs.signalfx.com/en/latest/dashboards/dashboard-filter-dynamic.html#filter-dashboard-charts), [dashboard variables](http://docs.signalfx.com/en/latest/dashboards/dashboard-filter-dynamic.html#dashboard-variables) and [time range](http://docs.signalfx.com/en/latest/_sidebars-and-includes/using-time-range-selector.html#time-range-selector) options. These options are applied to all charts in the dashboard, providing a consistent view of the data displayed in that dashboard. This also means that when you open a chart to drill down for more details, you are viewing the same data that is visible in the dashboard view.
 
-**NOTE:** Since every dashboard is included in a [dashboard group](resources/dashbord_group.md) (SignalFx collection of dashboards), you need to create that first and reference it as shown in the example.
+**NOTE:** Since every dashboard is included in a [dashboard group](dashbord_group.md) (SignalFx collection of dashboards), you need to create that first and reference it as shown in the example.
 
 
 ## Example Usage
@@ -43,7 +43,6 @@ The following arguments are supported in the resource block:
 
 * `name` - (Required) Name of the dashboard.
 * `dashboard_group` - (Required) The ID of the dashboard group that contains the dashboard.
-
 * `description` - (Optional) Description of the dashboard.
 * `charts_resolution` - (Optional) Specifies the chart data display resolution for charts in this dashboard. Value can be one of `"default"`,  `"low"`, `"high"`, or  `"highest"`.
 * `time_range` - (Optional) The time range prior to now to visualize. SignalFx time syntax (e.g. `"-5m"`, `"-1h"`).
@@ -63,28 +62,28 @@ The following arguments are supported in the resource block:
     * `restricted_suggestions` - (Optional) If `true`, this variable may only be set to the values listed in `values_suggested` and only these values will appear in autosuggestion menus. `false` by default.
 * `chart` - (Optional) Chart ID and layout information for the charts in the dashboard.
     * `chart_id` - (Required) ID of the chart to display.
-    * `width` - (Optional) How many columns (out of a total of 12) the chart should take up (between 1 and 12). 12 by default.
-    * `height` - (Optional) How many rows the chart should take up (greater than or equal to 1). 1 by default.
-    * `row` - (Optional) The row to show the chart in (zero-based); if height > 1, this value represents the topmost row of the chart (greater than or equal to 0).
-    * `column` - (Optional) The column to show the chart in (zero-based); this value always represents the leftmost column of the chart (between 0 and 11).
+    * `width` - (Optional) How many columns (out of a total of 12) the chart should take up (between `1` and `12`). `12` by default.
+    * `height` - (Optional) How many rows the chart should take up (greater than or equal to `1`). `1` by default.
+    * `row` - (Optional) The row to show the chart in (zero-based); if `height > 1`, this value represents the topmost row of the chart (greater than or equal to `0`).
+    * `column` - (Optional) The column to show the chart in (zero-based); this value always represents the leftmost column of the chart (between `0` and `11`).
 * `grid` - (Optional) Grid dashboard layout. Charts listed will be placed in a grid by row with the same width and height. If a chart cannot fit in a row, it will be placed automatically in the next row.
     * `chart_ids` - (Required) List of IDs of the charts to display.
     * `start_row` - (Optional) Starting row number for the grid.
     * `start_column` - (Optional) Starting column number for the grid.
-    * `width` - (Optional) How many columns (out of a total of 12) every chart should take up (between 1 and 12). 12 by default.
-    * `height` - (Optional) How many rows every chart should take up (greater than or equal to 1). 1 by default.
+    * `width` - (Optional) How many columns (out of a total of 12) every chart should take up (between `1` and `12`). `12` by default.
+    * `height` - (Optional) How many rows every chart should take up (greater than or equal to `1`). `1` by default.
 * `column` - (Optional) Column layout. Charts listed will be placed in a single column with the same width and height.
     * `chart_ids` - (Required) List of IDs of the charts to display.
     * `column` - (Optional) Column number for the layout.
     * `start_row` - (Optional) Starting row number for the grid.
-    * `width` - (Optional) How many columns (out of a total of 12) every chart should take up (between 1 and 12). 12 by default.
+    * `width` - (Optional) How many columns (out of a total of `12`) every chart should take up (between `1` and `12`). `12` by default.
     * `height` - (Optional) How many rows every chart should take up (greater than or equal to 1). 1 by default.
 * `synced` - (Optional) Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing, you do not need to specify it. Whenever you see a change to this field in the plan, it means that your resource has been changed from the UI and Terraform is now going to re-sync it back to what's in your configuration.
 
 
 ## Dashboard Layout Information
 
-*Every SignalFx dashboard is shown as a grid of 12 columns and potentially infinite number of rows.* The dimension of the single column depends on the screen resolution.
+**Every SignalFx dashboard is shown as a grid of 12 columns and potentially infinite number of rows.** The dimension of the single column depends on the screen resolution.
 
 When you define a dashboard resource, you need to specify which charts (by `chart_id`) should be displayed in the dashboard, along with layout information determining where on the dashboard the charts should be displayed. You have to assign to every chart a **width** in terms of number of column to cover up (from 1 to 12) and a **height** in terms of number of rows (more or equal than 1). You can also assign a position in the dashboard grid where you like the graph to stay. In order to do that, you assign a **row** that represent the topmost row of the chart and a **column** that represent the leftmost column of the chart. If by mistake, you wrote a configuration where there are not enough columns to accommodate your charts in a specific row, they will be split in different rows. In case a **row** was specified with value higher than 1, if all the rows above are not filled by other charts, the chart will be placed the **first empty row**.
 
