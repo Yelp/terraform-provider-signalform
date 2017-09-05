@@ -6,23 +6,23 @@
 
 SignalForm is a terraform provider to codify [SignalFx](http://signalfx.com) detectors, charts and dashboards, thereby making it easier to create, manage and version control them.
 
-Signalform is *not* an official SignalFx product, so we do not guarantee a 1:1 mapping between the SignalFx API and the functionalities offered by the provider.
+Signalform is **not** an official SignalFx product, so we do not guarantee a 1:1 mapping between the SignalFx API and the functionalities offered by the provider.
 
 Please note that this provider only works with terraform **0.9**.
 
-Documentation is available [here](https://yelp.github.io/terraform-provider-signalform).
+Documentation is available [here](https://yelp.github.io/terraform-provider-signalform/).
 
 
 * Resources
-    * [Detector](resources/detector.md)
-    * [Chart](resources/chart.md)
-        * [Time Chart](resources/time_chart.md)
-        * [List Chart](resources/list_chart.md)
-        * [Single Value Chart](resources/single_value_chart.md)
-        * [Heatmap Chart](resources/heatmap_chart.md)
-        * [Text Note](resources/text_note.md)
-    * [Dashboard](resources/dashboard.md)
-    * [Dashboard Group](resources/dashboard_group.md)
+    * [Detector](https://yelp.github.io/terraform-provider-signalform/resources/detector.html)
+    * [Chart](https://yelp.github.io/terraform-provider-signalform/resources/chart.html)
+        * [Time Chart](https://yelp.github.io/terraform-provider-signalform/resources/time_chart.html)
+        * [List Chart](https://yelp.github.io/terraform-provider-signalform/resources/list_chart.html)
+        * [Single Value Chart](https://yelp.github.io/terraform-provider-signalform/resources/single_value_chart.html)
+        * [Heatmap Chart](https://yelp.github.io/terraform-provider-signalform/resources/heatmap_chart.html)
+        * [Text Note](https://yelp.github.io/terraform-provider-signalform/resources/text_note.html)
+    * [Dashboard](https://yelp.github.io/terraform-provider-signalform/resources/dashboard.html)
+    * [Dashboard Group](https://yelp.github.io/terraform-provider-signalform/resources/dashboard_group.html)
 * [Build And Install](#build-and-install)
     * [Build binary from source](#build-binary-from-source)
     * [Build debian package from source](#build-debian-package-from-source)
