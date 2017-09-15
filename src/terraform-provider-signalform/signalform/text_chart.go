@@ -20,6 +20,17 @@ func textChartResource() *schema.Resource {
 				Computed:    true,
 				Description: "Latest timestamp the resource was updated",
 			},
+			"resource_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     CHART_URL,
+				Description: "API URL of the chart",
+			},
+			"url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL of the chart",
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,

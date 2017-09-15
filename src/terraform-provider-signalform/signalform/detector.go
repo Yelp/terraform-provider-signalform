@@ -10,7 +10,10 @@ import (
 	"strings"
 )
 
-const DETECTOR_API_URL = "https://api.signalfx.com/v2/detector"
+const (
+	DETECTOR_API_URL = "https://api.signalfx.com/v2/detector"
+	DETECTOR_URL     = "https://app.signalfx.com/#/detector/v2/<id>/edit"
+)
 
 func detectorResource() *schema.Resource {
 	return &schema.Resource{
@@ -25,6 +28,17 @@ func detectorResource() *schema.Resource {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Latest timestamp the resource was updated",
+			},
+			"url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Url of the detector",
+			},
+			"resource_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     DETECTOR_URL,
+				Description: "Base Detector url",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
