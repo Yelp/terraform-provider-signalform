@@ -17,6 +17,7 @@ const (
 	// Workaround for Signalfx bug related to post processing and lastUpdatedTime
 	OFFSET        = 10000.0
 	CHART_API_URL = "https://api.signalfx.com/v2/chart"
+	CHART_URL     = "https://app.signalfx.com/#/chart/<id>"
 )
 
 /*
@@ -134,6 +135,9 @@ func resourceCreate(url string, sfxToken string, payload []byte, d *schema.Resou
 		d.SetId(fmt.Sprintf("%s", mapped_resp["id"].(string)))
 		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
 		d.Set("synced", true)
+		// Replace "<id>" with the actual Resource ID
+		resource_url := strings.Replace(fmt.Sprintf("%s", d.Get("resource_url")), "<id>", mapped_resp["id"].(string), 1)
+		d.Set("url", resource_url)
 	} else {
 		return fmt.Errorf("For the resource %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 	}

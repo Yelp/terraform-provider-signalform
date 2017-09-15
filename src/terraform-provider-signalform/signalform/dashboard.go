@@ -7,7 +7,10 @@ import (
 	"strings"
 )
 
-const DASHBOARD_API_URL = "https://api.signalfx.com/v2/dashboard"
+const (
+	DASHBOARD_API_URL = "https://api.signalfx.com/v2/dashboard"
+	DASHBOARD_URL     = "https://app.signalfx.com/#/dashboard/<id>"
+)
 
 func dashboardResource() *schema.Resource {
 	return &schema.Resource{
@@ -22,6 +25,17 @@ func dashboardResource() *schema.Resource {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Latest timestamp the resource was updated",
+			},
+			"resource_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     DASHBOARD_URL,
+				Description: "API URL of the dashboard",
+			},
+			"url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL of the dashboard",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
