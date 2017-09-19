@@ -109,6 +109,13 @@ func resourceRead(url string, sfxToken string, d *schema.ResourceData) error {
 			d.Set("synced", false)
 			d.Set("last_updated", last_updated)
 		}
+		var resource_url string
+		if val, ok := d.GetOk("resource_url"); ok {
+			resource_url = strings.Replace(fmt.Sprintf("%s", val), "<id>", mapped_resp["id"].(string), 1)
+		} else {
+			resource_url = "DUMMY"
+		}
+		d.Set("url", resource_url)
 	} else {
 		if status_code == 404 && strings.Contains(string(resp_body), " not found") {
 			// This implies that the resouce was deleted in the Signalfx UI and therefore we need to recreate it
@@ -158,6 +165,8 @@ func resourceUpdate(url string, sfxToken string, payload []byte, d *schema.Resou
 		// If the resource was updated successfully with Signalform configs, it is now synced with Signalfx
 		d.Set("synced", true)
 		d.Set("last_updated", mapped_resp["lastUpdated"].(float64))
+		resource_url := strings.Replace(fmt.Sprintf("%s", d.Get("resource_url")), "<id>", mapped_resp["id"].(string), 1)
+		d.Set("url", resource_url)
 	} else {
 		return fmt.Errorf("For the resource %s SignalFx returned status %d: \n%s", d.Get("name"), status_code, resp_body)
 	}
