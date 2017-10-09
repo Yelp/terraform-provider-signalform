@@ -1,10 +1,11 @@
 PROJECT := terraform-provider-signalform
 
-BUILD_NUMBER?=0
-ifdef upstream_build_number
+ifdef BUILD_NUMBER
+	REAL_BUILD_NUMBER?=$(BUILD_NUMBER)
+else ifdef upstream_build_number
 	REAL_BUILD_NUMBER=$(upstream_build_number)
 else
-	REAL_BUILD_NUMBER?=$(BUILD_NUMBER)
+	REAL_BUILD_NUMBER?=0
 endif
 ORG ?= default
 

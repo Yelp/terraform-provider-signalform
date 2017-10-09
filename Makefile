@@ -14,7 +14,7 @@ export GOOS
 export GOARCH
 
 .PHONY: all
-all: fmt .git/hooks/pre-commit test build
+all: fmt .git/hooks/pre-commit test build itest_trusty itest_xenial
 
 .PHONY: fmt
 fmt:
