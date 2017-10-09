@@ -79,7 +79,6 @@ Once you built the package, you can just install like:
 sudo dpkg -i dist/terraform-provider-signalform.deb
 ```
 
-
 ## Release
 
 To make a new release:
