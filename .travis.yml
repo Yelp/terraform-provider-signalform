@@ -1,0 +1,6 @@
+language: go
+
+install:
+  - bash scripts/gitcookie.sh
+go:
+  - 1.9
