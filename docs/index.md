@@ -70,8 +70,8 @@ You can set environament variables to customize your build:
 
 * `TF_PATH`: Path of your terraform installation. Default: `/nail/opt/terraform-$(TF_VERSION)`, with `TF_VERSION` being the one supported by the provider.
 * `ORG`: Organization name to be used for your package name. Default: `default` (e.g. `terraform-provider-signalform-0.9_2.2.5-$(ORG)0_amd64.deb`)
-* `upstream_build_number`: If your CI pipeline (e.g. Jenkins) defines this variable, then the job id will be used as iteration number for your package (e.g. `terraform-provider-signalform-0.9_2.2.5-default$(upstream_build_number)_amd64.deb`)
-* `BUILD_NUMBER`: If `upstream_build_number` is not set, this variable will be used as iteration number. Default: `0` (e.g. `terraform-provider-signalform-0.9_2.2.5-default$(BUILD_NUMBER)_amd64.deb`)
+* `BUILD_NUMBER`: This variable will be used as iteration number. If not set, the default will be `0` (e.g. `terraform-provider-signalform-0.9_2.2.5-default$(BUILD_NUMBER)_amd64.deb`)
+* `upstream_build_number`: If `BUILD_NUMBER` is not set and if your CI pipeline (e.g. Jenkins) defines this variable, then the job id will be used as iteration number for your package (e.g. `terraform-provider-signalform-0.9_2.2.5-default$(upstream_build_number)_amd64.deb`)
 * `GOOS` and `GOARCH`: see the above [section](#build-binary-from-source). Remember to run `make clean` between builds with different target platform, so you start from a clean environment.
 
 Once you built the package, you can just install like:
