@@ -12,6 +12,8 @@ Please note that this provider only works with terraform **0.9**.
 
 Documentation is available [here](https://yelp.github.io/terraform-provider-signalform/).
 
+Changelog is available [here](https://github.com/Yelp/terraform-provider-signalform/blob/master/build/changelog).
+
 
 * Resources
     * [Detector](https://yelp.github.io/terraform-provider-signalform/resources/detector.html)
@@ -83,6 +85,7 @@ sudo dpkg -i dist/terraform-provider-signalform.deb
 To make a new release:
 
 1. bump `VERSION` up in `build/Makefile` (use [semantic versioning](http://semver.org/))
+1. run `make changelog` and edit the changelog file
 1. `git commit`
 1. `git tag v<VERSION>`
 1. `git push origin master && git push origin --tags`

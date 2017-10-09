@@ -60,5 +60,9 @@ binary:
 test: deps
 	cd $(BASE) && go test -v $$(glide novendor)
 
+.PHONY: changelog
+changelog:
+	make -C build $@
+
 .git/hooks/pre-commit:
 	if [ ! -f .git/hooks/pre-commit ]; then ln -s ../../git-hooks/pre-commit .git/hooks/pre-commit; fi

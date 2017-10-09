@@ -69,3 +69,12 @@ clean:
 .PHONY: shell
 shell: .docker_image_id
 	docker run --rm -t -i $$(cat .docker_image_id) /bin/bash
+
+.PHONY: changelog
+changelog:
+	if [ ! -f changelog ]; then \
+	    dch -v ${VERSION} --create -c changelog --package=$(PROJECT) -D trusty -u low ${ARGS}; \
+	else \
+	    dch -v ${VERSION} -c changelog -D trusty -u low ${ARGS}; \
+	fi
+	git add changelog

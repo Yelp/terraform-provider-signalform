@@ -1,0 +1,5 @@
+terraform-provider-signalform (2.2.7) trusty; urgency=low
+
+  * Initial public release.
+
+ -- Antonio Verardi <antonio@yelp.com>  Mon, 09 Oct 2017 08:13:35 -0700
