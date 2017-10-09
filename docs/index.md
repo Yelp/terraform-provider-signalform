@@ -1,6 +1,6 @@
 # terraform-provider-signalform
 
-[![Semver](http://img.shields.io/SemVer/2.0.0.png)](http://semver.org/spec/v2.0.0.html)
+[![GitHub version](https://badge.fury.io/gh/Yelp%2Fterraform-provider-signalform.svg)](https://badge.fury.io/gh/Yelp%2Fterraform-provider-signalform)
 [![Build Status](https://travis-ci.org/Yelp/terraform-provider-signalform.svg?branch=master)](https://travis-ci.org/Yelp/terraform-provider-signalform)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
