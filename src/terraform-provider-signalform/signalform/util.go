@@ -79,11 +79,11 @@ func getColorScaleOptions(d *schema.ResourceData) map[string]interface{} {
 	options := colorScale[0].(map[string]interface{})
 
 	thresholdsList := options["thresholds"].([]interface{})
-	thresholds := make([]float, len(thresholdsList))
+	thresholds := make([]float64, len(thresholdsList))
 	for i := range thresholdsList {
-		thresholds[i] = thresholdsList[i].(float)
+		thresholds[i] = thresholdsList[i].(float64)
 	}
-	sort.Sort(sort.Reverse(sort.IntSlice(thresholds)))
+	sort.Sort(sort.Reverse(sort.Float64Slice(thresholds)))
 	item["thresholds"] = thresholds
 	item["inverted"] = options["inverted"].(bool)
 	return item
