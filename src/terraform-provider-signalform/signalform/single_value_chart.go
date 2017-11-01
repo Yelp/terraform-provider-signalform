@@ -93,7 +93,7 @@ func singleValueChartResource() *schema.Resource {
 						"thresholds": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Elem:        &schema.Schema{Type: schema.TypeFloat},
 							MaxItems:    4,
 							Description: "The thresholds to set for the color range being used. Values (at most 4) must be in descending order",
 						},
