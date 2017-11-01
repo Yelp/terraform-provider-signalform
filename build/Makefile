@@ -9,7 +9,7 @@ else
 endif
 ORG ?= default
 
-VERSION := 2.2.7
+VERSION := 2.2.8
 TF_VERSION := 0.9
 ITERATION := $(ORG)$(REAL_BUILD_NUMBER)
 
