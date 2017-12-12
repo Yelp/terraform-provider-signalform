@@ -86,6 +86,18 @@ func detectorResource() *schema.Resource {
 				ConflictsWith: []string{"time_range"},
 				Description:   "Seconds since epoch. Used for visualization",
 			},
+			"tags": &schema.Schema{
+				Type:	       schema.TypeList,
+				Optional:      true,
+				Elem:	       &schema.Schema{Type: schema.TypeString},
+				Description:   "Tags associated with the detector",
+			},
+			"teams": &schema.Schema{
+				Type:	       schema.TypeList,
+				Optional:      true,
+				Elem:	       &schema.Schema{Type: schema.TypeString},
+				Description:   "Team IDs to associate the detector to",
+			},
 			"rule": &schema.Schema{
 				Type:        schema.TypeSet,
 				Required:    true,
@@ -120,6 +132,16 @@ func detectorResource() *schema.Resource {
 							Default:     false,
 							Description: "(default: false) When true, notifications and events will not be generated for the detect label",
 						},
+						"parameterized_body": &schema.Schema{
+							Type:	     schema.TypeString,
+							Optional:    true,
+							Description: "Custom notification message body when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info",
+						},
+						"parameterized_subject": &schema.Schema{
+							Type:	     schema.TypeString,
+							Optional:    true,
+							Description: "Custom notification message subject when an alert is triggered. See https://d    evelopers.signalfx.com/v2/reference#detector-model for more info",
+						},
 					},
 				},
 				Set: resourceRuleHash,
@@ -148,6 +170,14 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 		item["severity"] = tf_rule["severity"].(string)
 		item["detectLabel"] = tf_rule["detect_label"].(string)
 		item["disabled"] = tf_rule["disabled"].(bool)
+
+		if value, ok := tf_rule["parameterized_body"]; ok {
+			item["parameterizedBody"] = value
+		}
+
+		if value, ok := tf_rule["parameterized_subject"]; ok {
+			item["parameterizedSubject"] = value
+		}
 
 		if notifications, ok := tf_rule["notifications"]; ok {
 			notify := getNotifications(notifications.([]interface{}))
