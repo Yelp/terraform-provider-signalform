@@ -171,12 +171,12 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 		item["detectLabel"] = tf_rule["detect_label"].(string)
 		item["disabled"] = tf_rule["disabled"].(bool)
 
-		if value, ok := tf_rule["parameterized_body"]; ok {
-			item["parameterizedBody"] = value
+		if val, ok := tf_rule["parameterized_body"]; ok {
+			item["parameterizedBody"] = val.(string)
 		}
 
-		if value, ok := tf_rule["parameterized_subject"]; ok {
-			item["parameterizedSubject"] = value
+		if val, ok := tf_rule["parameterized_subject"]; ok {
+			item["parameterizedSubject"] = val.(string)
 		}
 
 		if notifications, ok := tf_rule["notifications"]; ok {
@@ -201,6 +201,14 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 	if viz := getVisualizationOptionsDetector(d); len(viz) > 0 {
 		payload["visualizationOptions"] = viz
+	}
+
+	if val, ok := d.GetOk("teams"); ok {
+		payload["teams"] = val
+	}
+
+	if val, ok := d.GetOk("tags"); ok {
+		payload["tags"] = val
 	}
 
 	return json.Marshal(payload)
@@ -302,6 +310,14 @@ func resourceRuleHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", m["severity"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["detect_label"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["disabled"]))
+
+	if val, ok := m["parameterized_body"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", val))
+	}
+
+	if val, ok := m["parameterized_subject"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", val))
+	}
 
 	// Sort the notifications so that we generate a consistent hash
 	if v, ok := m["notifications"]; ok {
