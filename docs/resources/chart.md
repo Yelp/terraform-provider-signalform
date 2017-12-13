@@ -12,7 +12,7 @@ SignalFx available chart types are the following:
 * [List Chart](list_chart.md)
 * [Single Value Chart](single_value_chart.md)
 * [Heatmap Chart](heatmap_chart.md)
-* [Text Note](text_node.md)
+* [Text Note](text_note.md)
 
 Time chart is the only chart type that includes four different visualization options for SignalFx graphs (image below): Line Chart, Column Chart, Area Chart and Histogram Chart.
 
