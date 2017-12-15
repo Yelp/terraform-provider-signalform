@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.3.0) trusty; urgency=low
+
+  * Support new parameters in detectors.
+
+ -- Rahul Ravindran <rahulrav@yelp.com>  Fri, 15 Dec 2017 11:16:03 -0800
+
 terraform-provider-signalform (2.2.9) trusty; urgency=low
 
   * Building against terraform 0.10 
