@@ -86,6 +86,18 @@ func detectorResource() *schema.Resource {
 				ConflictsWith: []string{"time_range"},
 				Description:   "Seconds since epoch. Used for visualization",
 			},
+			"tags": &schema.Schema{
+				Type:	       schema.TypeList,
+				Optional:      true,
+				Elem:	       &schema.Schema{Type: schema.TypeString},
+				Description:   "Tags associated with the detector",
+			},
+			"teams": &schema.Schema{
+				Type:	       schema.TypeList,
+				Optional:      true,
+				Elem:	       &schema.Schema{Type: schema.TypeString},
+				Description:   "Team IDs to associate the detector to",
+			},
 			"rule": &schema.Schema{
 				Type:        schema.TypeSet,
 				Required:    true,
@@ -120,6 +132,16 @@ func detectorResource() *schema.Resource {
 							Default:     false,
 							Description: "(default: false) When true, notifications and events will not be generated for the detect label",
 						},
+						"parameterized_body": &schema.Schema{
+							Type:	     schema.TypeString,
+							Optional:    true,
+							Description: "Custom notification message body when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info",
+						},
+						"parameterized_subject": &schema.Schema{
+							Type:	     schema.TypeString,
+							Optional:    true,
+							Description: "Custom notification message subject when an alert is triggered. See https://d    evelopers.signalfx.com/v2/reference#detector-model for more info",
+						},
 					},
 				},
 				Set: resourceRuleHash,
@@ -149,6 +171,14 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 		item["detectLabel"] = tf_rule["detect_label"].(string)
 		item["disabled"] = tf_rule["disabled"].(bool)
 
+		if val, ok := tf_rule["parameterized_body"]; ok {
+			item["parameterizedBody"] = val.(string)
+		}
+
+		if val, ok := tf_rule["parameterized_subject"]; ok {
+			item["parameterizedSubject"] = val.(string)
+		}
+
 		if notifications, ok := tf_rule["notifications"]; ok {
 			notify := getNotifications(notifications.([]interface{}))
 			item["notifications"] = notify
@@ -171,6 +201,22 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 	if viz := getVisualizationOptionsDetector(d); len(viz) > 0 {
 		payload["visualizationOptions"] = viz
+	}
+
+	if val, ok := d.GetOk("teams"); ok {
+		teams := []string{}
+                for _, team := range val.([]interface{}) {
+			teams = append(teams, team.(string))
+                }
+                payload["teams"] = teams
+	}
+
+	if val, ok := d.GetOk("tags"); ok {
+		tags := []string{}
+		for _, tag := range val.([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+		payload["tags"] = tags
 	}
 
 	return json.Marshal(payload)
@@ -272,6 +318,14 @@ func resourceRuleHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", m["severity"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["detect_label"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["disabled"]))
+
+	if val, ok := m["parameterized_body"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", val))
+	}
+
+	if val, ok := m["parameterized_subject"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", val))
+	}
 
 	// Sort the notifications so that we generate a consistent hash
 	if v, ok := m["notifications"]; ok {

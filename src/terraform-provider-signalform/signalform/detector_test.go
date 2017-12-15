@@ -42,6 +42,19 @@ func TestResourceRuleHash(t *testing.T) {
 
 	expected := hashcode.String("Test Rule Name-Critical-Test Detect Label-true-")
 	assert.Equal(t, expected, resourceRuleHash(values))
+
+	// Test new params in rules
+	values = map[string]interface{}{
+		"description":  "Test Rule Name",
+		"detect_label": "Test Detect Label",
+		"severity":     "Critical",
+		"disabled":     "true",
+		"parameterized_subject": "Test subject",
+		"parameterized_body": "Test body",
+	}
+
+	expected = hashcode.String("Test Rule Name-Critical-Test Detect Label-true-Test body-Test subject-")
+	assert.Equal(t, expected, resourceRuleHash(values))
 }
 
 func TestValidateSeverityAllowed(t *testing.T) {
