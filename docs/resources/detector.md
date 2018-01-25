@@ -58,7 +58,9 @@ variable "clusters" {
     * `disabled` - (Optional) When true, notifications and events will not be generated for the detect label. `false` by default.
     * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/v2/docs/detector-model#notifications-models> for more info.
     * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info.
-    * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See https://d    evelopers.signalfx.com/v2/reference#detector-model for more info.
+    * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info.
+    * `runbook_url` - (Optional) URL of page to consult when an alert is triggered. This can be used with custom notification messages.
+    * `tip` - Plain text suggested first course of action, such as a command line to execute. This can be used with custom notification messages.
 
 **Notes**
 

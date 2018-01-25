@@ -142,6 +142,16 @@ func detectorResource() *schema.Resource {
 							Optional:    true,
 							Description: "Custom notification message subject when an alert is triggered. See https://d    evelopers.signalfx.com/v2/reference#detector-model for more info",
 						},
+						"runbook_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "URL of page to consult when an alert is triggered",
+						},
+						"tip": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Plain text suggested first course of action, such as a command to execute.",
+						},
 					},
 				},
 				Set: resourceRuleHash,
@@ -162,6 +172,7 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 	tf_rules := d.Get("rule").(*schema.Set).List()
 	rules_list := make([]map[string]interface{}, len(tf_rules))
+
 	for i, tf_rule := range tf_rules {
 		tf_rule := tf_rule.(map[string]interface{})
 		item := make(map[string]interface{})
@@ -177,6 +188,14 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 		if val, ok := tf_rule["parameterized_subject"]; ok {
 			item["parameterizedSubject"] = val.(string)
+		}
+
+		if val, ok := tf_rule["runbook_url"]; ok {
+			item["runbookUrl"] = val.(string)
+		}
+
+		if val, ok := tf_rule["tip"]; ok {
+			item["tip"] = val.(string)
 		}
 
 		if notifications, ok := tf_rule["notifications"]; ok {
@@ -319,12 +338,13 @@ func resourceRuleHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", m["detect_label"]))
 	buf.WriteString(fmt.Sprintf("%s-", m["disabled"]))
 
-	if val, ok := m["parameterized_body"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", val))
-	}
+	// loop through optional rule attributes
+	var optional_rule_keys = []string{"parameterized_body", "parameterized_subject", "runbook_url", "tip"}
 
-	if val, ok := m["parameterized_subject"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", val))
+	for _, key := range optional_rule_keys {
+		if val, ok := m[key]; ok {
+			buf.WriteString(fmt.Sprintf("%s-", val))
+		}
 	}
 
 	// Sort the notifications so that we generate a consistent hash
