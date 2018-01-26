@@ -60,7 +60,7 @@ variable "clusters" {
     * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info.
     * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info.
     * `runbook_url` - (Optional) URL of page to consult when an alert is triggered. This can be used with custom notification messages.
-    * `tip` - Plain text suggested first course of action, such as a command line to execute. This can be used with custom notification messages.
+    * `tip` - (Optional) Plain text suggested first course of action, such as a command line to execute. This can be used with custom notification messages.
 
 **Notes**
 
