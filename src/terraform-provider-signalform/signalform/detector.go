@@ -87,16 +87,16 @@ func detectorResource() *schema.Resource {
 				Description:   "Seconds since epoch. Used for visualization",
 			},
 			"tags": &schema.Schema{
-				Type:	       schema.TypeList,
-				Optional:      true,
-				Elem:	       &schema.Schema{Type: schema.TypeString},
-				Description:   "Tags associated with the detector",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Tags associated with the detector",
 			},
 			"teams": &schema.Schema{
-				Type:	       schema.TypeList,
-				Optional:      true,
-				Elem:	       &schema.Schema{Type: schema.TypeString},
-				Description:   "Team IDs to associate the detector to",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Team IDs to associate the detector to",
 			},
 			"rule": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -133,12 +133,12 @@ func detectorResource() *schema.Resource {
 							Description: "(default: false) When true, notifications and events will not be generated for the detect label",
 						},
 						"parameterized_body": &schema.Schema{
-							Type:	     schema.TypeString,
+							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Custom notification message body when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info",
 						},
 						"parameterized_subject": &schema.Schema{
-							Type:	     schema.TypeString,
+							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Custom notification message subject when an alert is triggered. See https://d    evelopers.signalfx.com/v2/reference#detector-model for more info",
 						},
@@ -205,10 +205,10 @@ func getPayloadDetector(d *schema.ResourceData) ([]byte, error) {
 
 	if val, ok := d.GetOk("teams"); ok {
 		teams := []string{}
-                for _, team := range val.([]interface{}) {
+		for _, team := range val.([]interface{}) {
 			teams = append(teams, team.(string))
-                }
-                payload["teams"] = teams
+		}
+		payload["teams"] = teams
 	}
 
 	if val, ok := d.GetOk("tags"); ok {
@@ -262,6 +262,9 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 			item["email"] = vars[1]
 		} else if vars[0] == "PagerDuty" {
 			item["credentialId"] = vars[1]
+		} else if vars[0] == "Slack" {
+			item["credentialId"] = vars[1]
+			item["channel"] = vars[2]
 		} else if vars[0] == "Webhook" {
 			item["secret"] = vars[1]
 			item["url"] = vars[2]
