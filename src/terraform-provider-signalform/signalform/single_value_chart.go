@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"math"
 )
 
 func singleValueChartResource() *schema.Resource {
@@ -87,21 +88,38 @@ func singleValueChartResource() *schema.Resource {
 			"color_scale": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Values for each color in the range. Example: { thresholds : [80, 60, 40, 0], inverted : true }",
+				Description: "Single color range including both the color to display for that range and the borders of the range",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"thresholds": &schema.Schema{
-							Type:        schema.TypeList,
-							Required:    true,
-							Elem:        &schema.Schema{Type: schema.TypeFloat},
-							MaxItems:    4,
-							Description: "The thresholds to set for the color range being used. Values (at most 4) must be in descending order",
-						},
-						"inverted": &schema.Schema{
-							Type:        schema.TypeBool,
+						"gt": &schema.Schema{
+							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     false,
-							Description: "(false by default) If false or omitted, values are red if they are above the highest specified value. If true, values are red if they are below the lowest specified value",
+							Default:     math.MaxFloat32,
+							Description: "Indicates the lower threshold non-inclusive value for this range",
+						},
+						"gte": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Default:     math.MaxFloat32,
+							Description: "Indicates the lower threshold inclusive value for this range",
+						},
+						"lt": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Default:     math.MaxFloat32,
+							Description: "Indicates the upper threshold non-inculsive value for this range",
+						},
+						"lte": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Default:     math.MaxFloat32,
+							Description: "Indicates the upper threshold inclusive value for this range",
+						},
+						"color": &schema.Schema{
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The color to use. Must be either \"gray\", \"blue\", \"navy\", \"orange\", \"yellow\", \"magenta\", \"purple\", \"violet\", \"lilac\", \"green\", \"aquamarine\"",
+							ValidateFunc: validateHeatmapChartColor,
 						},
 					},
 				},
