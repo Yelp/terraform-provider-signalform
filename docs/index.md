@@ -8,7 +8,7 @@ SignalForm is a terraform provider to codify [SignalFx](http://signalfx.com) det
 
 Signalform is **not** an official SignalFx product, so we do not guarantee a 1:1 mapping between the SignalFx API and the functionalities offered by the provider.
 
-Please note that this provider only works with terraform **0.9**.
+Please note that this provider is tested against Terraform **0.10**. We do not guarantee that the provider works correctly with any other version of Terraform, even though it might.
 
 Documentation is available [here](https://yelp.github.io/terraform-provider-signalform/).
 
