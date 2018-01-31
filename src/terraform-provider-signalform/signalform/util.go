@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -19,6 +19,20 @@ const (
 	CHART_API_URL = "https://api.signalfx.com/v2/chart"
 	CHART_URL     = "https://app.signalfx.com/#/chart/<id>"
 )
+
+var ChartColors = map[string]string{
+	"gray":       "#999999",
+	"blue":       "#0077c2",
+	"navy":       "#6CA2B7",
+	"orange":     "#b04600",
+	"yellow":     "#e5b312",
+	"magenta":    "#bd468d",
+	"purple":     "#e9008a",
+	"violet":     "#876ffe",
+	"lilac":      "#a747ff",
+	"green":      "#05ce00",
+	"aquamarine": "#0dba8f",
+}
 
 /*
   Utility function that wraps http calls to SignalFx
@@ -70,22 +84,37 @@ func validateSortBy(v interface{}, k string) (we []string, errors []error) {
 /*
 	Get Color Scale Options
 */
-func getColorScaleOptions(d *schema.ResourceData) map[string]interface{} {
-	item := make(map[string]interface{})
+func getColorScaleOptions(d *schema.ResourceData) []interface{} {
 	colorScale := d.Get("color_scale").(*schema.Set).List()
+	item := make([]interface{}, len(colorScale))
 	if len(colorScale) == 0 {
 		return item
 	}
-	options := colorScale[0].(map[string]interface{})
-
-	thresholdsList := options["thresholds"].([]interface{})
-	thresholds := make([]float64, len(thresholdsList))
-	for i := range thresholdsList {
-		thresholds[i] = thresholdsList[i].(float64)
+	for i := range colorScale {
+		options := make(map[string]interface{})
+		scale := colorScale[i].(map[string]interface{})
+		if scale["gt"].(float64) != math.MaxFloat32 {
+			options["gt"] = scale["gt"].(float64)
+		}
+		if scale["gte"].(float64) != math.MaxFloat32 {
+			options["gte"] = scale["gte"].(float64)
+		}
+		if scale["lt"].(float64) != math.MaxFloat32 {
+			options["lt"] = scale["lt"].(float64)
+		}
+		if scale["lte"].(float64) != math.MaxFloat32 {
+			options["lte"] = scale["lte"].(float64)
+		}
+		paletteIndex := 0
+		for colorName, _ := range ChartColors {
+			if colorName == scale["color"].(string) {
+				break
+			}
+			paletteIndex++
+		}
+		options["paletteIndex"] = paletteIndex
+		item[i] = options
 	}
-	sort.Sort(sort.Reverse(sort.Float64Slice(thresholds)))
-	item["thresholds"] = thresholds
-	item["inverted"] = options["inverted"].(bool)
 	return item
 }
 

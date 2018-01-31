@@ -38,9 +38,12 @@ The following arguments are supported in the resource block:
 * `program_text` - (Required) Signalflow program text for the chart. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
 * `description` - (Optional) Description of the chart.
 * `color_by` - (Optional) Must be `"Dimension"` or `"Metric"`. `"Dimension"` by default.
-* `color_scale` - (Optional. `color_by` must be `"Scale"`) Values for each color in the range. Example: `{ thresholds : [ 80, 60, 40, 20, 0 ], inverted : true }`. Look at this [link](https://docs.signalfx.com/en/latest/charts/chart-options-tab.html).
-    * `thresholds` - (Required) The thresholds to set for the color range being used. Values (at most `4`) must be in descending order.
-    * `inverted` - (Optional) If false or omitted, values are red if they are above the highest specified value. If `true`, values are red if they are below the lowest specified value. `false` by default.
+* `color_scale` - (Optional. `color_by` must be `"Scale"`) Single color range including both the color to display for that range and the borders of the range. Example: `[{ gt : 60, color : blue }, { lte : 60, color : yellow }]`. Look at this [link](https://docs.signalfx.com/en/latest/charts/chart-options-tab.html).
+    * `gt` - (Optional) Indicates the lower threshold non-inclusive value for this range.
+    * `gte` - (Optional) Indicates the lower threshold inclusive value for this range.
+    * `lt` - (Optional) Indicates the upper threshold non-inculsive value for this range.
+    * `lte` - (Optional) Indicates the upper threshold inclusive value for this range.
+    * `color` - (Required) The color range to use. Must be either gray, blue, navy, orange, yellow, magenta, purple, violet, lilac, green, aquamarine. ![Colors](https://github.com/Yelp/terraform-provider-signalform/raw/master/docs/resources/colors.png)
 * `unit_prefix` - (Optional) Must be `"Metric"` or `"Binary"`. `"Metric"` by default.
 * `max_delay - (Optional) How long (in seconds) to wait for late datapoints
 * `refresh_interval` - (Optional) How often (in seconds) to refresh the value.
