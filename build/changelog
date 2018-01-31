@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.4.0) trusty; urgency=low
+
+  * Change way to add scale colors to heatmaps. Add slack notif integration 
+
+ -- Francesco Di Chiara <fdc@yelp.com>  Wed, 31 Jan 2018 09:52:36 -0800
+
 terraform-provider-signalform (2.3.0) trusty; urgency=low
 
   * Support new parameters in detectors.
