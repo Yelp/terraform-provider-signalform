@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.5.0) trusty; urgency=low
+
+  * Support creation of runbook_url and tip in detector model. 
+
+ -- Rahul Ravindran <rahulrav@yelp.com>  Tue, 06 Feb 2018 10:47:00 -0800
+
 terraform-provider-signalform (2.4.0) trusty; urgency=low
 
   * Change way to add scale colors to heatmaps. Add slack notif integration 
