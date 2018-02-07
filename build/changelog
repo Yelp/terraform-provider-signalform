@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.5.1) trusty; urgency=low
+
+  * Freeze lib ffi version 
+
+ -- Rahul Ravindran <rahulrav@yelp.com>  Wed, 07 Feb 2018 09:46:35 -0800
+
 terraform-provider-signalform (2.5.0) trusty; urgency=low
 
   * Support creation of runbook_url and tip in detector model. 
