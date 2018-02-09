@@ -19,8 +19,8 @@ func resetGlobals() {
 	HomeConfigPath = OldHomeConfigPath
 }
 
-func createTempConfigFile(content string) (*os.File, error) {
-	tmpfile, err := ioutil.TempFile(os.TempDir(), "signalform.conf")
+func createTempConfigFile(content string, name string) (*os.File, error) {
+	tmpfile, err := ioutil.TempFile(os.TempDir(), name)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating temporary test file. err: %s", err.Error())
 	}
@@ -58,13 +58,13 @@ func TestProviderConfigureFromNothing(t *testing.T) {
 
 func TestProviderConfigureFromTerraform(t *testing.T) {
 	defer resetGlobals()
-	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 	defer os.Remove(tmpfileSystem.Name())
 	SystemConfigPath = tmpfileSystem.Name()
-	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -113,13 +113,13 @@ func TestProviderConfigureFromTerraformOnly(t *testing.T) {
 
 func TestProviderConfigureFromEnvironment(t *testing.T) {
 	defer resetGlobals()
-	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 	defer os.Remove(tmpfileSystem.Name())
 	SystemConfigPath = tmpfileSystem.Name()
-	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -166,13 +166,13 @@ func TestProviderConfigureFromEnvironmentOnly(t *testing.T) {
 
 func TestSignalformConfigureFromHomeFile(t *testing.T) {
 	defer resetGlobals()
-	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 	defer os.Remove(tmpfileSystem.Name())
 	SystemConfigPath = tmpfileSystem.Name()
-	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -194,10 +194,41 @@ func TestSignalformConfigureFromHomeFile(t *testing.T) {
 	assert.Equal(t, "WWW", configuration.AuthToken)
 }
 
+func TestSignalformConfigureFromNetrcFile(t *testing.T) {
+	defer resetGlobals()
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`, "signalform.conf")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileSystem.Name())
+	SystemConfigPath = tmpfileSystem.Name()
+	tmpfileHome, err := createTempConfigFile(`machine signalfx login auth_login password WWW`, ".netrc")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	defer os.Remove(tmpfileHome.Name())
+	os.Setenv("NETRC", tmpfileHome.Name())
+	defer os.Unsetenv("NETRC")
+	raw := make(map[string]interface{})
+	rawConfig, err := config.NewRawConfig(raw)
+	if err != nil {
+		t.Fatalf("Error creating mock config: %s", err.Error())
+	}
+
+	rp := Provider()
+	err = rp.Configure(terraform.NewResourceConfig(rawConfig))
+	meta := rp.(*schema.Provider).Meta()
+	if meta == nil {
+		t.Fatalf("Expected metadata, got nil. err: %s", err.Error())
+	}
+	configuration := meta.(*signalformConfig)
+	assert.Equal(t, "WWW", configuration.AuthToken)
+}
+
 func TestSignalformConfigureFromHomeFileOnly(t *testing.T) {
 	defer resetGlobals()
 	SystemConfigPath = "filedoesnotexist"
-	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`)
+	tmpfileHome, err := createTempConfigFile(`{"auth_token":"WWW"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -221,7 +252,7 @@ func TestSignalformConfigureFromHomeFileOnly(t *testing.T) {
 
 func TestSignalformConfigureFromSystemFileOnly(t *testing.T) {
 	defer resetGlobals()
-	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`)
+	tmpfileSystem, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"ZZZ"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -255,7 +286,7 @@ func TestReadConfigFileFileNotFound(t *testing.T) {
 
 func TestReadConfigFileParseError(t *testing.T) {
 	config := signalformConfig{}
-	tmpfile, err := createTempConfigFile(`{"auth_tok`)
+	tmpfile, err := createTempConfigFile(`{"auth_tok`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -267,7 +298,7 @@ func TestReadConfigFileParseError(t *testing.T) {
 
 func TestReadConfigFileSuccess(t *testing.T) {
 	config := signalformConfig{}
-	tmpfile, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"XXX"}`)
+	tmpfile, err := createTempConfigFile(`{"useless_config":"foo","auth_token":"XXX"}`, "signalform.conf")
 	if err != nil {
 		t.Fatal(err.Error())
 	}

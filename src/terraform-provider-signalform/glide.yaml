@@ -1,5 +1,8 @@
 package: terraform-provider-signalform
 import:
+- package: github.com/bgentry/go-netrc
+  subpackages:
+  - netrc
 - package: github.com/hashicorp/terraform
   version: 0.10.7
   subpackages:
@@ -7,6 +10,7 @@ import:
   - helper/schema
   - plugin
   - terraform
+- package: github.com/mitchellh/go-homedir
 testImport:
 - package: github.com/stretchr/testify
   subpackages:
