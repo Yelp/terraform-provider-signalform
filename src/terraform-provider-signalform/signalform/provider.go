@@ -3,11 +3,14 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/bgentry/go-netrc/netrc"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"os"
 	"os/user"
+	"runtime"
 )
 
 var SystemConfigPath = "/etc/signalfx.conf"
@@ -69,7 +72,13 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	// provider first
+	// Use netrc next
+	err := readNetrcFile(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	// provider is the top priority
 	if token, ok := data.GetOk("auth_token"); ok {
 		config.AuthToken = token.(string)
 	}
@@ -79,7 +88,6 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 	}
 
 	return &config, nil
-
 }
 
 func readConfigFile(configPath string, config *signalformConfig) error {
@@ -91,5 +99,53 @@ func readConfigFile(configPath string, config *signalformConfig) error {
 	if err != nil {
 		return fmt.Errorf("Failed to parse config file. %s", err.Error())
 	}
+	return nil
+}
+
+func readNetrcFile(config *signalformConfig) error {
+	// Inspired by https://github.com/hashicorp/terraform/blob/master/vendor/github.com/hashicorp/go-getter/netrc.go
+	// Get the netrc file path
+	path := os.Getenv("NETRC")
+	if path == "" {
+		filename := ".netrc"
+		if runtime.GOOS == "windows" {
+			filename = "_netrc"
+		}
+
+		var err error
+		path, err = homedir.Expand("~/" + filename)
+		if err != nil {
+			return err
+		}
+	}
+
+	// If the file is not a file, then do nothing
+	if fi, err := os.Stat(path); err != nil {
+		// File doesn't exist, do nothing
+		if os.IsNotExist(err) {
+			return nil
+		}
+
+		// Some other error!
+		return err
+	} else if fi.IsDir() {
+		// File is directory, ignore
+		return nil
+	}
+
+	// Load up the netrc file
+	net, err := netrc.ParseFile(path)
+	if err != nil {
+		return fmt.Errorf("Error parsing netrc file at %q: %s", path, err)
+	}
+
+	machine := net.FindMachine("api.signalfx.com")
+	if machine == nil {
+		// Machine not found, no problem
+		return nil
+	}
+
+	// Set the auth token
+	config.AuthToken = machine.Password
 	return nil
 }
