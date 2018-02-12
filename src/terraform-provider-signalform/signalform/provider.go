@@ -139,7 +139,7 @@ func readNetrcFile(config *signalformConfig) error {
 		return fmt.Errorf("Error parsing netrc file at %q: %s", path, err)
 	}
 
-	machine := net.FindMachine("signalfx")
+	machine := net.FindMachine("api.signalfx.com")
 	if machine == nil {
 		// Machine not found, no problem
 		return nil

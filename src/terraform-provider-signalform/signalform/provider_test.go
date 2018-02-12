@@ -202,7 +202,7 @@ func TestSignalformConfigureFromNetrcFile(t *testing.T) {
 	}
 	defer os.Remove(tmpfileSystem.Name())
 	SystemConfigPath = tmpfileSystem.Name()
-	tmpfileHome, err := createTempConfigFile(`machine signalfx login auth_login password WWW`, ".netrc")
+	tmpfileHome, err := createTempConfigFile(`machine api.signalfx.com login auth_login password WWW`, ".netrc")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
