@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.6.0) trusty; urgency=low
+
+  * Added netrc support 
+
+ -- Francesco Di Chiara <fdc@yelp.com>  Mon, 12 Feb 2018 11:51:35 -0800
+
 terraform-provider-signalform (2.5.1) trusty; urgency=low
 
   * Freeze lib ffi version 
