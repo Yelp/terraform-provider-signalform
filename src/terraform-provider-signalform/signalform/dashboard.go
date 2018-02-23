@@ -3,8 +3,9 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const (
@@ -236,6 +237,12 @@ func dashboardResource() *schema.Resource {
 							Default:     false,
 							Description: "If true, this variable may only be set to the values listed in preferredSuggestions. and only these values will appear in autosuggestion menus. false by default",
 						},
+						"replace_only": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, this variable will only apply to charts with a filter on the named property.",
+						},
 					},
 				},
 			},
@@ -437,6 +444,8 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 			}
 		}
 		item["restricted"] = variable["restricted_suggestions"].(bool)
+
+		item["replaceOnly"] = variable["replace_only"].(bool)
 
 		vars_list[i] = item
 	}

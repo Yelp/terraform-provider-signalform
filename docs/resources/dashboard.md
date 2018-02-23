@@ -60,6 +60,7 @@ The following arguments are supported in the resource block:
     * `value_required` - (Optional) Determines whether a value is required for this variable (and therefore whether it will be possible to view this dashboard without this filter applied). `false` by default.
     * `values_suggested` - (Optional) A list of strings of suggested values for this variable; these suggestions will receive priority when values are autosuggested for this variable.
     * `restricted_suggestions` - (Optional) If `true`, this variable may only be set to the values listed in `values_suggested` and only these values will appear in autosuggestion menus. `false` by default.
+    * `replace_only` - (Optional) If `true`, this variable will only apply to charts that have a filter for the property.
 * `chart` - (Optional) Chart ID and layout information for the charts in the dashboard.
     * `chart_id` - (Required) ID of the chart to display.
     * `width` - (Optional) How many columns (out of a total of 12) the chart should take up (between `1` and `12`). `12` by default.
