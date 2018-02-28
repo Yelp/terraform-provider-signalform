@@ -8,8 +8,8 @@ export PATH
 # unset GOROOT avoids: "go test error: cannot use matchString as type testing.testDeps in argument to testing.MainStart"
 unexport GOROOT
 
-GOOS ?= linux
-GOARCH ?= amd64
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
 export GOOS
 export GOARCH
 
