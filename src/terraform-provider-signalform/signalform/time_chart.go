@@ -139,11 +139,21 @@ func timeChartResource() *schema.Resource {
 							Default:     math.MaxFloat32,
 							Description: "A line to draw as a high watermark",
 						},
+						"high_watermark_label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A label to attach to the high watermark line",
+						},
 						"low_watermark": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
 							Default:     -math.MaxFloat32,
 							Description: "A line to draw as a low watermark",
+						},
+						"low_watermark_label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A label to attach to the low watermark line",
 						},
 					},
 				},
@@ -176,11 +186,21 @@ func timeChartResource() *schema.Resource {
 							Default:     math.MaxFloat32,
 							Description: "A line to draw as a high watermark",
 						},
+						"high_watermark_label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A label to attach to the high watermark line",
+						},
 						"low_watermark": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
 							Default:     -math.MaxFloat32,
 							Description: "A line to draw as a low watermark",
+						},
+						"low_watermark_label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A label to attach to the low watermark line",
 						},
 					},
 				},
@@ -374,12 +394,18 @@ func getSingleAxisOptions(axisOpt map[string]interface{}) map[string]interface{}
 			item["highWatermark"] = val.(float64)
 		}
 	}
+	if val, ok := axisOpt["high_watermark_label"]; ok {
+		item["highWatermarkLabel"] = val.(string)
+	}
 	if val, ok := axisOpt["low_watermark"]; ok {
 		if val.(float64) == -math.MaxFloat32 {
 			item["lowWatermark"] = nil
 		} else {
 			item["lowWatermark"] = val.(float64)
 		}
+	}
+	if val, ok := axisOpt["low_watermark_label"]; ok {
+		item["lowWatermarkLabel"] = val.(string)
 	}
 	return item
 }
