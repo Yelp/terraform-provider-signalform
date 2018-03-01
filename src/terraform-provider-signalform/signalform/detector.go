@@ -287,6 +287,8 @@ func getNotifications(tf_notifications []interface{}) []map[string]interface{} {
 		} else if vars[0] == "Webhook" {
 			item["secret"] = vars[1]
 			item["url"] = vars[2]
+		} else if vars[0] == "Team" || vars[0] == "TeamEmail" {
+			item["team"] = vars[1]
 		}
 
 		notifications_list[i] = item
