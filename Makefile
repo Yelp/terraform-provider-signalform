@@ -7,6 +7,7 @@ export GOPATH
 export PATH
 # unset GOROOT avoids: "go test error: cannot use matchString as type testing.testDeps in argument to testing.MainStart"
 unexport GOROOT
+unexport SFX_AUTH_TOKEN
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
