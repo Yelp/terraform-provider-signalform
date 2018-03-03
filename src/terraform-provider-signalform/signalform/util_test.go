@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestSendRequestSuccess(t *testing.T) {
@@ -40,19 +39,6 @@ func TestSendRequestFail(t *testing.T) {
 	assert.Equal(t, -1, status_code)
 	assert.Nil(t, body)
 	assert.Contains(t, err.Error(), "Failed sending GET request")
-}
-
-func TestSendRequestTimeout(t *testing.T) {
-	timeout := time.Duration(1 * time.Second)
-	server := httptest.NewServer(http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(timeout)
-	}), timeout, "Timeout occurred"))
-	defer server.Close()
-
-	status_code, body, err := sendRequest("POST", server.URL, "token", nil)
-	assert.Equal(t, 503, status_code)
-	assert.Equal(t, "Timeout occurred", string(body))
-	assert.Nil(t, err)
 }
 
 func TestValidateSignalfxRelativeTimeMinutes(t *testing.T) {
