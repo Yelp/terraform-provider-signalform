@@ -106,6 +106,22 @@ func listChartResource() *schema.Resource {
 							Description:  "Color to use",
 							ValidateFunc: validatePerSignalColor,
 						},
+						"value_unit": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validateUnitTimeChart,
+							Description:  "A unit to attach to this plot. Units support automatic scaling (eg thousands of bytes will be displayed as kilobytes)",
+						},
+						"value_prefix": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An arbitrary prefix to display with the value of this plot",
+						},
+						"value_suffix": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An arbitrary suffix to display with the value of this plot",
+						},
 					},
 				},
 			},
