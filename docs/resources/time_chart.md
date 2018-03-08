@@ -61,13 +61,17 @@ The following arguments are supported in the resource block:
     * `min_value` - (Optional) The minimum value for the left axis.
     * `max_value` - (Optional) The maximum value for the left axis.
     * `high_watermark` - (Optional) A line to draw as a high watermark.
+    * `high_watermark_label` - (Optional) A label to attach to the high watermark line.
     * `low_watermark`  - (Optional) A line to draw as a low watermark.
+    * `low_watermark_label` - (Optional) A label to attach to the low watermark line.
 * `axis_right` - (Optional) Set of axis options.
     * `label` - (Optional) Label of the right axis.
     * `min_value` - (Optional) The minimum value for the right axis.
     * `max_value` - (Optional) The maximum value for the right axis.
     * `high_watermark` - (Optional) A line to draw as a high watermark.
+    * `high_watermark_label` - (Optional) A label to attach to the high watermark line.
     * `low_watermark`  - (Optional) A line to draw as a low watermark.
+    * `low_watermark_label` - (Optional) A label to attach to the low watermark line.
 * `viz_options` - (Optional) Plot-level customization options, associated with a publish statement.
     * `label` - (Required) Label used in the publish statement that displays the plot (metric time series data) you want to customize.
     * `color` - (Optional) Color to use : gray, blue, azure, navy, brown, orange, yellow, iris, magenta, pink, purple, violet, lilac, emerald, green, aquamarine. ![Colors](https://github.com/Yelp/terraform-provider-signalform/raw/master/docs/resources/colors.png)
