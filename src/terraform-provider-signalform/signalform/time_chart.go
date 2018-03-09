@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"math"
+	"strings"
 )
 
 var PaletteColors = map[string]int{
@@ -273,6 +274,22 @@ func timeChartResource() *schema.Resource {
 							ValidateFunc: validatePlotTypeTimeChart,
 							Description:  "(Chart plot_type by default) The visualization style to use. Must be \"LineChart\", \"AreaChart\", \"ColumnChart\", or \"Histogram\"",
 						},
+						"value_unit": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validateUnitTimeChart,
+							Description:  "A unit to attach to this plot. Units support automatic scaling (eg thousands of bytes will be displayed as kilobytes)",
+						},
+						"value_prefix": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An arbitrary prefix to display with the value of this plot",
+						},
+						"value_suffix": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An arbitrary suffix to display with the value of this plot",
+						},
 					},
 				},
 			},
@@ -345,6 +362,15 @@ func getPerSignalVizOptions(d *schema.ResourceData) []map[string]interface{} {
 			} else {
 				item["yAxis"] = 0
 			}
+		}
+		if val, ok := v["value_unit"].(string); ok && val != "" {
+			item["valueUnit"] = val
+		}
+		if val, ok := v["value_suffix"].(string); ok && val != "" {
+			item["valueSuffix"] = val
+		}
+		if val, ok := v["value_prefix"].(string); ok && val != "" {
+			item["valuePrefix"] = val
 		}
 
 		viz_list[i] = item
@@ -531,5 +557,44 @@ func validateAxisTimeChart(v interface{}, k string) (we []string, errors []error
 	if value != "right" && value != "left" {
 		errors = append(errors, fmt.Errorf("%s not allowed; must be either right or left", value))
 	}
+	return
+}
+
+func validateUnitTimeChart(v interface{}, k string) (we []string, errors []error) {
+	value := v.(string)
+	allowedWords := []string{
+		"Bit",
+		"Kilobit",
+		"Megabit",
+		"Gigabit",
+		"Terabit",
+		"Petabit",
+		"Exabit",
+		"Zettabit",
+		"Yottabit",
+		"Byte",
+		"Kibibyte",
+		"Mebibyte",
+		"Gigibyte",
+		"Tebibyte",
+		"Pebibyte",
+		"Exbibyte",
+		"Zebibyte",
+		"Yobibyte",
+		"Nanosecond",
+		"Microsecond",
+		"Millisecond",
+		"Second",
+		"Minute",
+		"Hour",
+		"Day",
+		"Week",
+	}
+	for _, word := range allowedWords {
+		if value == word {
+			return
+		}
+	}
+	errors = append(errors, fmt.Errorf("%s not allowed; must be one of: %s", value, strings.Join(allowedWords, ", ")))
 	return
 }
