@@ -3,6 +3,7 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -32,6 +33,12 @@ func dashboardGroupResource() *schema.Resource {
 				Optional:    true,
 				Description: "Description of the dashboard group",
 			},
+			"teams": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Team IDs to associate the dashboard group to",
+			},
 		},
 
 		Create: dashboardgroupCreate,
@@ -50,6 +57,14 @@ func getPayloadDashboardGroup(d *schema.ResourceData) ([]byte, error) {
 		"description": d.Get("description").(string),
 		// We are not keeping track of this because it's already done in the dashboard resource.
 		"dashboards": make([]string, 0),
+	}
+
+	if val, ok := d.GetOk("teams"); ok {
+		teams := []string{}
+		for _, team := range val.([]interface{}) {
+			teams = append(teams, team.(string))
+		}
+		payload["teams"] = teams
 	}
 
 	return json.Marshal(payload)
