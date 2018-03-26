@@ -20,4 +20,5 @@ The following arguments are supported in the resource block:
 
 * `name` - (Required) Name of the dashboard group.
 * `description` - (Required) Description of the dashboard group.
+* `teams` - (Optional) Team IDs to associate the dashboard group to.
 * `synced` - (Optional) Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing, you don not need to specify it. Whenever you see a change to this field in the plan, it means that your resource has been changed from the UI and Terraform is now going to re-sync it back to what is in your configuration.
