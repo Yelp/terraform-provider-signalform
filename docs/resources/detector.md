@@ -16,8 +16,8 @@ resource "signalform_detector" "application_delay" {
     max_delay = 30
     program_text = <<-EOF
         signal = data('app.delay', filter('cluster','${var.clusters[count.index]}'), extrapolation='last_value', maxExtrapolations=5).max()
-        detect('Processing old messages 5m', when(signal > 60, '5m'))
-        detect('Processing old messages 30m', when(signal > 60, '30m'))
+        detect(when(signal > 60, '5m')).publish('Processing old messages 5m')
+        detect(when(signal > 60, '30m')).publish('Processing old messages 30m')
     EOF
  rule {
         description = "maximum > 60 for 5m"
@@ -45,7 +45,7 @@ variable "clusters" {
 * `name` - (Required) Name of the detector.
 * `program_text` - (Required) Signalflow program text for the detector. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
 * `description` - (Optional) Description of the detector.
-* `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#late-datapoints> for more info. Max value is `900` seconds (15 minutes).
+* `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#delayed-datapoints> for more info. Max value is `900` seconds (15 minutes).
 * `show_data_markers` - (Optional) When `true`, markers will be drawn for each datapoint within the visualization. `false` by default.
 * `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. `"-5m"`, `"-1h"`). Conflicts with `start_time` and `end_time`.
 * `start_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
@@ -56,9 +56,9 @@ variable "clusters" {
     * `detect_label` - (Required) A detect label which matches a detect label within `program_text`.
     * `severity` - (Required) The severity of the rule, must be one of: `"Critical"`, `"Warning"`, `"Major"`, `"Minor"`, `"Info"`.
     * `disabled` - (Optional) When true, notifications and events will not be generated for the detect label. `false` by default.
-    * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/v2/docs/detector-model#notifications-models> for more info.
-    * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info.
-    * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See https://developers.signalfx.com/v2/reference#detector-model for more info.
+    * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/v2/reference#section-notifications> for more info.
+    * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See <https://developers.signalfx.com/v2/reference#section-custom-notification-messages> for more info.
+    * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See <https://developers.signalfx.com/v2/reference#section-custom-notification-messages> for more info.
     * `runbook_url` - (Optional) URL of page to consult when an alert is triggered. This can be used with custom notification messages.
     * `tip` - (Optional) Plain text suggested first course of action, such as a command line to execute. This can be used with custom notification messages.
 
@@ -70,4 +70,4 @@ It is highly recommended that you use both `max_delay` in your detector configur
 
 `extrapolation` allows you to specify how to handle missing data. An extrapolation policy can be added to individual signals by updating the data block in your `program_text`.
 
-See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#late-datapoints> for more info.
+See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#delayed-datapoints> for more info.
