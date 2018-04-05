@@ -1,3 +1,12 @@
+terraform-provider-signalform (2.7.0) trusty; urgency=low
+
+  * Added teams to dashboard groups.
+  * Added support for valueUnit, publishLabelOptions and other options
+    to charts.
+  * Allow detector rules to notify teams. 
+
+ -- Rahul Ravindran <rahulrav@yelp.com>  Thu, 05 Apr 2018 16:30:29 -0700
+
 terraform-provider-signalform (2.6.0) trusty; urgency=low
 
   * Added netrc support 
