@@ -56,6 +56,7 @@ The following arguments are supported in the resource block:
 * `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. `"-5m"`, `"-1h"`). Conflicts with `start_time` and `end_time`.
 * `start_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
 * `end_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
+* `axes_include_zero` - (Optional) Force the chart to display zero on the y-axes, even if none of the data is near zero.
 * `axis_left` - (Optional) Set of axis options.
     * `label` - (Optional) Label of the left axis.
     * `min_value` - (Optional) The minimum value for the left axis.
