@@ -51,7 +51,7 @@ The following arguments are supported in the resource block:
 * `unit_prefix` - (Optional) Must be `"Metric"` or `"Binary`". `"Metric"` by default.
 * `color_by` - (Optional) Must be `"Dimension"` or `"Metric"`. `"Dimension"` by default.
 * `minimum_resolution` - (Optional) The minimum resolution (in seconds) to use for computing the underlying program.
-* `max_delay - (Optional) How long (in seconds) to wait for late datapoints.
+* `max_delay` - (Optional) How long (in seconds) to wait for late datapoints.
 * `disable_sampling` - (Optional) If `false`, samples a subset of the output MTS, which improves UI performance. `false` by default
 * `time_range` - (Optional) From when to display data. SignalFx time syntax (e.g. `"-5m"`, `"-1h"`). Conflicts with `start_time` and `end_time`.
 * `start_time` - (Optional) Seconds since epoch. Used for visualization. Conflicts with `time_range`.
