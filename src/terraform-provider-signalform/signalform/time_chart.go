@@ -211,6 +211,11 @@ func timeChartResource() *schema.Resource {
 				Optional:    true,
 				Description: "Force a specific number of significant digits in the y-axis",
 			},
+			"axes_include_zero": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Force y-axes to always show zero",
+			},
 			"on_chart_legend_dimension": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -454,6 +459,9 @@ func getTimeChartOptions(d *schema.ResourceData) map[string]interface{} {
 	}
 	if val, ok := d.GetOk("axes_precision"); ok {
 		viz["axisPrecision"] = val.(int)
+	}
+	if val, ok := d.GetOk("axes_include_zero"); ok {
+		viz["includeZero"] = val.(bool)
 	}
 
 	programOptions := make(map[string]interface{})
