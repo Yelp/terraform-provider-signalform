@@ -21,17 +21,20 @@ const (
 )
 
 var ChartColors = map[string]string{
-	"gray":       "#999999",
-	"blue":       "#0077c2",
-	"navy":       "#6CA2B7",
-	"orange":     "#b04600",
-	"yellow":     "#e5b312",
-	"magenta":    "#bd468d",
-	"purple":     "#e9008a",
-	"violet":     "#876ffe",
-	"lilac":      "#a747ff",
-	"green":      "#05ce00",
-	"aquamarine": "#0dba8f",
+	"gray":        "#999999",
+	"blue":        "#0077c2",
+	"navy":        "#6CA2B7",
+	"orange":      "#b04600",
+	"yellow":      "#e5b312",
+	"magenta":     "#bd468d",
+	"purple":      "#e9008a",
+	"violet":      "#876ffe",
+	"lilac":       "#a747ff",
+	"green":       "#05ce00",
+	"aquamarine":  "#0dba8f",
+	"red":         "#ea1849",
+	"light_green": "#acef7f",
+	"dark_green":  "#6bd37e",
 }
 
 /*
