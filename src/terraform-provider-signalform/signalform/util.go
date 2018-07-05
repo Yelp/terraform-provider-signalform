@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const (

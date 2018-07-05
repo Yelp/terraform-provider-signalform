@@ -3,9 +3,10 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"math"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func heatmapChartResource() *schema.Resource {
