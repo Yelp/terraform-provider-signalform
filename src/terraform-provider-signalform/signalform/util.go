@@ -90,6 +90,10 @@ func validateSortBy(v interface{}, k string) (we []string, errors []error) {
 */
 func getColorScaleOptions(d *schema.ResourceData) []interface{} {
 	colorScale := d.Get("color_scale").(*schema.Set).List()
+	return getColorScaleOptionsFromSlice(colorScale)
+}
+
+func getColorScaleOptionsFromSlice(colorScale []interface{}) []interface{} {
 	item := make([]interface{}, len(colorScale))
 	if len(colorScale) == 0 {
 		return item

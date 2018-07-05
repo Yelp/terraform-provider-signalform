@@ -98,3 +98,21 @@ func TestSanitizeProgramText(t *testing.T) {
 	sane_text := "previous = data('statmonster.inbound_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).timeshift('2m').sum()\nsignal = data('statmonster.inbo    und_lines',filter('source_region','${var.clusters_no_uswest2[count.index]}')).sum()\ndetect('Low number of log lines', when(signal < (previous * 0.50), '2m', 0.90))"
 	assert.Equal(t, sane_text, sanitizeProgramText(text))
 }
+
+func TestCorrectColorValue(t *testing.T) {
+	options := map[string](interface{}){
+		"color": "magenta",
+		"gt":    0.0,
+		"gte":   0.0,
+		"lt":    0.0,
+		"lte":   0.0,
+	}
+	colorscale := []interface{}{options}
+	retm := getColorScaleOptionsFromSlice(colorscale)
+
+	ret := retm[0].(map[string]interface{})
+	// should be 5 - https://developers.signalfx.com/reference#section-color-palette
+	fmt.Printf("%+v", ret)
+	assert.Equal(t, 5, ret["paletteIndex"])
+
+}
