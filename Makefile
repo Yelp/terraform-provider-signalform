@@ -21,19 +21,20 @@ all: fmt .git/hooks/pre-commit test build itest_trusty itest_xenial
 fmt:
 	go fmt ./...
 
-.PHONY: deps
 deps:
 	@echo Getting dependencies...
 	@go get github.com/Masterminds/glide
 	@cd src/github.com/Masterminds/glide && git checkout --quiet v0.12.3
 	@go build -o bin/glide github.com/Masterminds/glide/
 	@cd $(BASE) && $(GLIDE) install
+	@touch deps
 
 .PHONY: clean
 clean:
 	rm -rf bin
 	rm -rf pkg
 	make -C build clean
+	rm -f deps
 
 .PHONY: build
 build: test
