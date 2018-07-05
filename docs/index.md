@@ -93,6 +93,24 @@ To make a new release:
 ## Contributing
 Everyone is encouraged to contribute to `terraform-provider-signalform`. You can contribute by forking the GitHub repo and making a pull request or opening an issue.
 
+## Running tests
+
+To run the tests, run `make test`
+
+To pass options to the test, e.g to target a specific test, pass the TEST_OPTS
+option to the make task - e.g
+
+```
+make test TEST_OPTS='-test.run TestSendRequestSuccess'
+```
+
+To make the tests run faster, you can run
+
+```
+make test TEST_OPTS='-i'
+```
+
+Subsequent make test commands should be quicker
 
 ## FAQ
 

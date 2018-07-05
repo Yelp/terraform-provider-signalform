@@ -60,7 +60,7 @@ binary:
 
 .PHONY: test
 test: deps
-	cd $(BASE) && go test -v $$(glide novendor)
+	cd $(BASE) && go test -v $$(glide novendor) ${TEST_OPTS}
 
 .PHONY: changelog
 changelog:
