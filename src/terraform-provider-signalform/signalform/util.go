@@ -21,21 +21,26 @@ const (
 	CHART_URL     = "https://app.signalfx.com/#/chart/<id>"
 )
 
-var ChartColors = map[string]string{
-	"gray":        "#999999",
-	"blue":        "#0077c2",
-	"navy":        "#6CA2B7",
-	"orange":      "#b04600",
-	"yellow":      "#e5b312",
-	"magenta":     "#bd468d",
-	"purple":      "#e9008a",
-	"violet":      "#876ffe",
-	"lilac":       "#a747ff",
-	"green":       "#05ce00",
-	"aquamarine":  "#0dba8f",
-	"red":         "#ea1849",
-	"light_green": "#acef7f",
-	"dark_green":  "#6bd37e",
+type chartColor struct {
+	name string
+	hex  string
+}
+
+var ChartColorsSlice = []chartColor{
+	{"gray", "#999999"},
+	{"blue", "#0077c2"},
+	{"navy", "#6CA2B7"},
+	{"orange", "#b04600"},
+	{"yellow", "#e5b312"},
+	{"magenta", "#bd468d"},
+	{"purple", "#e9008a"},
+	{"violet", "#876ffe"},
+	{"lilac", "#a747ff"},
+	{"green", "#05ce00"},
+	{"aquamarine", "#0dba8f"},
+	{"red", "#ea1849"},
+	{"light_green", "#acef7f"},
+	{"dark_green", "#6bd37e"},
 }
 
 /*
@@ -114,11 +119,11 @@ func getColorScaleOptionsFromSlice(colorScale []interface{}) []interface{} {
 			options["lte"] = scale["lte"].(float64)
 		}
 		paletteIndex := 0
-		for colorName, _ := range ChartColors {
-			if colorName == scale["color"].(string) {
+		for index, thing := range ChartColorsSlice {
+			if scale["color"] == thing.name {
+				paletteIndex = index
 				break
 			}
-			paletteIndex++
 		}
 		options["paletteIndex"] = paletteIndex
 		item[i] = options

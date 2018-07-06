@@ -199,7 +199,12 @@ func getHeatmapColorRangeOptions(d *schema.ResourceData) map[string]interface{} 
 			}
 		}
 		color := options["color"].(string)
-		item["color"] = ChartColors[color]
+		for _, colorStruct := range ChartColorsSlice {
+			if color == colorStruct.name {
+				item["color"] = colorStruct.name
+				break
+			}
+		}
 	}
 	return item
 }
@@ -287,11 +292,15 @@ func heatmapchartDelete(d *schema.ResourceData, meta interface{}) error {
 */
 func validateHeatmapChartColor(v interface{}, k string) (we []string, errors []error) {
 	value := v.(string)
-	if _, ok := ChartColors[value]; !ok {
-		keys := make([]string, 0, len(ChartColors))
-		for k := range ChartColors {
-			keys = append(keys, k)
+	keys := make([]string, 0, len(ChartColorsSlice))
+	found := false
+	for _, item := range ChartColorsSlice {
+		if value == item.name {
+			found = true
 		}
+		keys = append(keys, item.name)
+	}
+	if !found {
 		joinedColors := strings.Join(keys, ",")
 		errors = append(errors, fmt.Errorf("%s not allowed; must be either %s", value, joinedColors))
 	}
