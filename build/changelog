@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.7.1) trusty; urgency=medium
+
+  * use correct colors in colorscale
+
+ -- Timothy Mower <tmower@yelp.com>  Fri, 06 Jul 2018 03:36:47 -0700
+
 terraform-provider-signalform (2.7.0) trusty; urgency=low
 
   * Added teams to dashboard groups.
