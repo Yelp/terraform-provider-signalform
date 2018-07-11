@@ -111,8 +111,8 @@ func TestCorrectColorValue(t *testing.T) {
 	retm := getColorScaleOptionsFromSlice(colorscale)
 
 	ret := retm[0].(map[string]interface{})
-	// should be 5 - https://developers.signalfx.com/reference#section-color-palette
+	// should be 7 - https://developers.signalfx.com/reference#section-color-palette
 	fmt.Printf("%+v", ret)
-	assert.Equal(t, 5, ret["paletteIndex"])
+	assert.Equal(t, 7, ret["paletteIndex"])
 
 }
