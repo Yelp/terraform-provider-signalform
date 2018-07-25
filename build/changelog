@@ -1,8 +1,8 @@
-terraform-provider-signalform (3.0.0) trusty; urgency=low
+terraform-provider-signalform (2.7.1) trusty; urgency=medium
 
-  * Building against terraform 0.11
+  * use correct colors in colorscale
 
- -- Tim Mower <tmower@yelp.com>  Tue, 12 Jun 2018 10:07:28 -0700
+ -- Timothy Mower <tmower@yelp.com>  Fri, 06 Jul 2018 03:36:47 -0700
 
 terraform-provider-signalform (2.7.0) trusty; urgency=low
 

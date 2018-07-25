@@ -3,7 +3,7 @@ FROM ubuntu:trusty
 MAINTAINER team-metrics <team-metrics@yelp.com>
 
 ENV GO_VERSION=1.9
-ENV TF_VERSION=0.11.7
+ENV TF_VERSION=0.10.7
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     wget \

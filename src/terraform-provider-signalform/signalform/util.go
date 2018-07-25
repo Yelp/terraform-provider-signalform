@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 const (
@@ -20,21 +21,33 @@ const (
 	CHART_URL     = "https://app.signalfx.com/#/chart/<id>"
 )
 
-var ChartColors = map[string]string{
-	"gray":        "#999999",
-	"blue":        "#0077c2",
-	"navy":        "#6CA2B7",
-	"orange":      "#b04600",
-	"yellow":      "#e5b312",
-	"magenta":     "#bd468d",
-	"purple":      "#e9008a",
-	"violet":      "#876ffe",
-	"lilac":       "#a747ff",
-	"green":       "#05ce00",
-	"aquamarine":  "#0dba8f",
-	"red":         "#ea1849",
-	"light_green": "#acef7f",
-	"dark_green":  "#6bd37e",
+type chartColor struct {
+	name string
+	hex  string
+}
+
+var ChartColorsSlice = []chartColor{
+	{"gray", "#999999"},
+	{"blue", "#0077c2"},
+	{"light_blue", "#00b9ff"},
+	{"navy", "#6CA2B7"},
+	{"dark_orange", "#b04600"},
+	{"orange", "#f47e00"},
+	{"dark_yellow", "#e5b312"},
+	{"magenta", "#bd468d"},
+	{"cerise", "#e9008a"},
+	{"pink", "#ff8dd1"},
+	{"violet", "#876ff3"},
+	{"purple", "#a747ff"},
+	{"gray_blue", "#ab99bc"},
+	{"dark_green", "#007c1d"},
+	{"green", "#05ce00"},
+	{"aquamarine", "#0dba8f"},
+	{"red", "#ea1849"},
+	{"yellow", "#ea1849"},
+	{"vivid_yellow", "#ea1849"},
+	{"light_green", "#acef7f"},
+	{"lime_green", "#6bd37e"},
 }
 
 /*
@@ -89,6 +102,10 @@ func validateSortBy(v interface{}, k string) (we []string, errors []error) {
 */
 func getColorScaleOptions(d *schema.ResourceData) []interface{} {
 	colorScale := d.Get("color_scale").(*schema.Set).List()
+	return getColorScaleOptionsFromSlice(colorScale)
+}
+
+func getColorScaleOptionsFromSlice(colorScale []interface{}) []interface{} {
 	item := make([]interface{}, len(colorScale))
 	if len(colorScale) == 0 {
 		return item
@@ -109,11 +126,11 @@ func getColorScaleOptions(d *schema.ResourceData) []interface{} {
 			options["lte"] = scale["lte"].(float64)
 		}
 		paletteIndex := 0
-		for colorName, _ := range ChartColors {
-			if colorName == scale["color"].(string) {
+		for index, thing := range ChartColorsSlice {
+			if scale["color"] == thing.name {
+				paletteIndex = index
 				break
 			}
-			paletteIndex++
 		}
 		options["paletteIndex"] = paletteIndex
 		item[i] = options

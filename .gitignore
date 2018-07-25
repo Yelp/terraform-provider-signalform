@@ -11,3 +11,4 @@ crash.log
 *.lock
 *.swp
 *.swo
+deps
