@@ -51,7 +51,7 @@ itest_%:
 	make -C build $@
 
 .PHONY: package
-package: itest_lucid itest_trusty itest_xenial
+package: itest_trusty itest_xenial
 
 .PHONY: binary
 binary:
