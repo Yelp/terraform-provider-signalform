@@ -79,6 +79,16 @@ The following arguments are supported in the resource block:
     * `start_row` - (Optional) Starting row number for the grid.
     * `width` - (Optional) How many columns (out of a total of `12`) every chart should take up (between `1` and `12`). `12` by default.
     * `height` - (Optional) How many rows every chart should take up (greater than or equal to 1). 1 by default.
+* `event_overlay` - (Optional) Specify a list of event overlays to include in the dashboard.
+    * `line` - (Optional) Show a vertical line for the event. `false` by default.
+    * `label` - (Optional) Text shown in the dropdown when selecting this overlay from the menu.
+    * `color` - (Optional) Color to use : gray, blue, azure, navy, brown, orange, yellow, iris, magenta, pink, purple, violet, lilac, emerald, green, aquamarine. ![Colors](https://github.com/Yelp/terraform-provider-signalform/raw/master/docs/resources/colors.png)
+    * `signal` - Search term used to choose the events shown in the overlay.
+    * `source` - (Optional) Each element specifies a filter to use against the signal specified in the `signal`.
+        * `property` - The name of a dimension to filter against.
+        * `values` - A list of values to be used with the `property`, they will be combined via `OR`.
+        * `negated` - (Optional) If true,  only data that does not match the specified value of the specified property appear in the event overlay. Defaults to `false`.
+* `selected_event_overlay` - (Optional) Defines event overlays which are enabled by default. See `event_overlay` for a definition of fields.
 * `synced` - (Optional) Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing, you do not need to specify it. Whenever you see a change to this field in the plan, it means that your resource has been changed from the UI and Terraform is now going to re-sync it back to what's in your configuration.
 
 

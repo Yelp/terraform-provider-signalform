@@ -3,6 +3,7 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -272,6 +273,101 @@ func dashboardResource() *schema.Resource {
 					},
 				},
 			},
+			"event_overlay": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Event overlay to add to charts",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"line": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "(false by default) Whether a vertical line should be displayed in the plot at the time the event occurs",
+						},
+						"label": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The text displaying in the dropdown menu used to select this event overlay as an active overlay for the dashboard.",
+						},
+						"color": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "Color to use",
+							ValidateFunc: validatePerSignalColor,
+						},
+						"signal": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Search term used to define events",
+						},
+						"source": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"property": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A metric time series dimension or property name",
+									},
+									"negated": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Default:     false,
+										Description: "(false by default) Whether this filter should be a \"not\" filter",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeSet,
+										Required:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "List of strings (which will be treated as an OR filter on the property)",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"selected_event_overlay": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Event overlay added to charts by default to charts",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"signal": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Search term used to define events",
+						},
+						"source": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"property": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A metric time series dimension or property name",
+									},
+									"negated": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Default:     false,
+										Description: "(false by default) Whether this filter should be a \"not\" filter",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeSet,
+										Required:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "List of strings (which will be treated as an OR filter on the property)",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 
 		Create: dashboardCreate,
@@ -305,6 +401,16 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 		payload["filters"] = all_filters
 	}
 
+	overlays := d.Get("event_overlay").([]interface{})
+	if len(overlays) > 0 {
+		payload["eventOverlays"] = getDashboardEventOverlays(overlays)
+	}
+
+	soverlays := d.Get("selected_event_overlay").([]interface{})
+	if len(soverlays) > 0 {
+		payload["selectedEventOverlays"] = getDashboardEventOverlays(soverlays)
+	}
+
 	charts := getDashboardCharts(d)
 	column_charts := getDashboardColumns(d)
 	dashboard_charts := append(charts, column_charts...)
@@ -317,7 +423,6 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 	if chartsResolution, ok := d.GetOk("charts_resolution"); ok {
 		payload["chartDensity"] = strings.ToUpper(chartsResolution.(string))
 	}
-
 	return json.Marshal(payload)
 }
 
@@ -452,6 +557,46 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 	return vars_list
 }
 
+func getDashboardEventOverlays(overlays []interface{}) []map[string]interface{} {
+	overlay_list := make([]map[string]interface{}, len(overlays))
+	for i, overlay := range overlays {
+		overlay := overlay.(map[string]interface{})
+		item := make(map[string]interface{})
+		item["eventSignal"] = map[string]interface{}{
+			"eventSearchText": overlay["signal"].(string),
+			"eventType":       "eventTimeSeries",
+		}
+		if val, ok := overlay["line"].(bool); ok {
+			item["eventLine"] = val
+		}
+		if val, ok := overlay["label"].(string); ok {
+			item["label"] = val
+		}
+
+		if val, ok := overlay["color"].(string); ok {
+			if elem, ok := PaletteColors[val]; ok {
+				item["eventColorIndex"] = elem
+			}
+		}
+
+		if sources, ok := overlay["source"].([]interface{}); ok {
+			sources_list := make([]map[string]interface{}, len(sources))
+			for j, source := range sources {
+				source := source.(map[string]interface{})
+				s := make(map[string]interface{})
+				s["property"] = source["property"].(string)
+				s["value"] = source["values"].(*schema.Set).List()
+				s["NOT"] = source["negated"].(bool)
+				sources_list[j] = s
+			}
+			item["sources"] = sources_list
+		}
+
+		overlay_list[i] = item
+	}
+	return overlay_list
+}
+
 func getDashboardFilters(d *schema.ResourceData) []map[string]interface{} {
 	filters := d.Get("filter").(*schema.Set).List()
 	filter_list := make([]map[string]interface{}, len(filters))
@@ -474,7 +619,7 @@ func dashboardCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
-
+	log.Printf("[SignalForm] Dashboard Create Payload: %s", string(payload))
 	return resourceCreate(DASHBOARD_API_URL, config.AuthToken, payload, d)
 }
 
@@ -492,7 +637,7 @@ func dashboardUpdate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 	url := fmt.Sprintf("%s/%s", DASHBOARD_API_URL, d.Id())
-
+	log.Printf("[SignalForm] Dashboard Update Payload: %s", string(payload))
 	return resourceUpdate(url, config.AuthToken, payload, d)
 }
 
