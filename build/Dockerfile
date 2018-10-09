@@ -1,6 +1,6 @@
 FROM ubuntu:trusty
 
-MAINTAINER team-metrics <team-metrics@yelp.com>
+MAINTAINER Yelp <darwin@yelp.dog>
 
 ENV GO_VERSION=1.9
 ENV TF_VERSION=0.10.7
