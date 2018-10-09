@@ -54,7 +54,7 @@ Once you have built the binary, place it in the same folder of your terraform in
 
 ### Build debian package from source
 
-If you want to build your package targeting at the same time Ubuntu Lucid, Trusty and Xenial, then run:
+If you want to build your package targeting at the same time Ubuntu Trusty and Xenial, then run:
 ```shell
 make package
 ```
