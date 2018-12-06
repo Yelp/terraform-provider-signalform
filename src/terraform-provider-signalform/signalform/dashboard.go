@@ -78,12 +78,12 @@ func dashboardResource() *schema.Resource {
 				Description:   "Seconds since epoch to end the visualization",
 				ConflictsWith: []string{"time_range"},
 			},
-                        "tags": &schema.Schema{
-                                Type:        schema.TypeList,
-                                Optional:    true,
-                                Elem:        &schema.Schema{Type: schema.TypeString},
-                                Description: "Tags associated with the dashboard",
-                        },
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Tags associated with the dashboard",
+			},
 			"chart": &schema.Schema{
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -323,13 +323,13 @@ func getPayloadDashboard(d *schema.ResourceData) ([]byte, error) {
 	if chartsResolution, ok := d.GetOk("charts_resolution"); ok {
 		payload["chartDensity"] = strings.ToUpper(chartsResolution.(string))
 	}
-        if val, ok := d.GetOk("tags"); ok {
-            tags := []string{}
-            for _, tag := range val.([]interface{}) {
-                    tags = append(tags, tag.(string))
-            }
-            payload["tags"] = tags
-        }
+	if val, ok := d.GetOk("tags"); ok {
+		tags := []string{}
+		for _, tag := range val.([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+		payload["tags"] = tags
+	}
 
 	return json.Marshal(payload)
 }
