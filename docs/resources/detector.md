@@ -54,7 +54,7 @@ variable "clusters" {
 * `teams` - (Optional) Team IDs to associcate the detector to.
 * `rule` - (Required) Set of rules used for alerting.
     * `detect_label` - (Required) A detect label which matches a detect label within `program_text`.
-    * `severity` - (Required) The severity of the rule, must be one of: `"Critical"`, `"Warning"`, `"Major"`, `"Minor"`, `"Info"`.
+    * `severity` - (Required) The severity of the rule, must be one of: `"Critical"`, `"Major"`, `"Minor"`, `"Warning"`, `"Info"`.
     * `disabled` - (Optional) When true, notifications and events will not be generated for the detect label. `false` by default.
     * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/v2/reference#section-notifications> for more info.
     * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See <https://developers.signalfx.com/v2/reference#section-custom-notification-messages> for more info.
