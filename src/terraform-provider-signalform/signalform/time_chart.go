@@ -244,6 +244,12 @@ func timeChartResource() *schema.Resource {
 				Default:     false,
 				Description: "(false by default) Whether area and bar charts in the visualization should be stacked",
 			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Tags associated with the chart",
+			},
 			"plot_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -340,6 +346,13 @@ func getPayloadTimeChart(d *schema.ResourceData) ([]byte, error) {
 	}
 	if len(viz) > 0 {
 		payload["options"] = viz
+	}
+	if val, ok := d.GetOk("tags"); ok {
+		tags := []string{}
+		for _, tag := range val.([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+		payload["tags"] = tags
 	}
 
 	return json.Marshal(payload)
