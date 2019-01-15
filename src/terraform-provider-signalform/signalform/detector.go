@@ -374,7 +374,7 @@ func resourceRuleHash(v interface{}) int {
 */
 func validateSeverity(v interface{}, k string) (we []string, errors []error) {
 	value := v.(string)
-	allowedWords := []string{"Critical", "Warning", "Major", "Minor", "Info"}
+	allowedWords := []string{"Critical", "Major", "Minor", "Warning", "Info"}
 	for _, word := range allowedWords {
 		if value == word {
 			return
