@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.8.0) trusty; urgency=low
+
+  * added tags to charts and dashboards
+
+ -- Wendy Vivar <wendyv@yelp.com>  Thu, 31 Jan 2019 14:09:12 -0800
+
 terraform-provider-signalform (2.7.1) trusty; urgency=medium
 
   * use correct colors in colorscale
