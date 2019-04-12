@@ -1,3 +1,9 @@
+terraform-provider-signalform (2.8.1) trusty; urgency=low
+
+  * bump version in Makefile
+
+ -- Wendy Vivar <wendyv@yelp.com>  Fri, 12 Apr 2019 14:46:46 -0700
+
 terraform-provider-signalform (2.8.0) trusty; urgency=low
 
   * added tags to charts and dashboards
