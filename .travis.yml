@@ -5,4 +5,4 @@ services:
 install:
   - bash scripts/gitcookie.sh
 go:
-  - 1.9
+  - 1.11

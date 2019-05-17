@@ -15,7 +15,7 @@ export GOOS
 export GOARCH
 
 .PHONY: all
-all: fmt .git/hooks/pre-commit test build itest_trusty itest_xenial
+all: fmt .git/hooks/pre-commit test build itest_trusty itest_xenial itest_bionic
 
 .PHONY: fmt
 fmt:
@@ -51,7 +51,7 @@ itest_%:
 	make -C build $@
 
 .PHONY: package
-package: itest_trusty itest_xenial
+package: itest_trusty itest_xenial itest_bionic
 
 .PHONY: binary
 binary:
