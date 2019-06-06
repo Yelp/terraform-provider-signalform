@@ -9,7 +9,7 @@ else
 endif
 ORG ?= default
 
-VERSION := 2.8.1
+VERSION := 2.9.0
 TF_VERSION := 0.10
 ITERATION := $(ORG)$(REAL_BUILD_NUMBER)
 
@@ -74,8 +74,8 @@ shell: .docker_image_id
 .PHONY: changelog
 changelog:
 	if [ ! -f changelog ]; then \
-	    dch -v ${VERSION} --create -c changelog --package=$(PROJECT) -D trusty -u low ${ARGS}; \
+	    dch -v ${VERSION} --create -c changelog --package=$(PROJECT) -D xenial -u low ${ARGS}; \
 	else \
-	    dch -v ${VERSION} -c changelog -D trusty -u low ${ARGS}; \
+	    dch -v ${VERSION} -c changelog -D xenial -u low ${ARGS}; \
 	fi
 	git add changelog
