@@ -2,7 +2,7 @@ FROM ubuntu:xenial
 MAINTAINER Yelp <darwin@yelp.dog>
 
 ENV GO_VERSION=1.11
-ENV TF_VERSION=0.10.7
+ENV TF_VERSION=0.12.1
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -yq \
     build-essential \
