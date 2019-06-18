@@ -9,8 +9,8 @@ else
 endif
 ORG ?= default
 
-VERSION := 2.9.0
-TF_VERSION := 0.10
+VERSION := 2.10.0
+TF_VERSION := 0.12
 ITERATION := $(ORG)$(REAL_BUILD_NUMBER)
 
 TF_PATH ?= /nail/opt/terraform-$(TF_VERSION)
