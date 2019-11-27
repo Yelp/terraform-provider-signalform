@@ -44,5 +44,5 @@ The following arguments are supported in the resource block:
 * `refresh_interval` - (Optional) How often (in seconds) to refresh the values of the list.
 * `legend_fields_to_hide` - (Optional) List of properties that should not be displayed in the chart legend (i.e. dimension names). All the properties are visible by default.
 * `max_precision` - (Optional) Maximum number of digits to display when rounding values up or down.
-* `sort_by` - (Optional) The property to use when sorting the elements. Use `value` if you want to sort by value. Must be prepended with `+` for ascending or `-` for descending (e.g. `-foo`).
+* `sort_by` - (Optional) The property to use when sorting the elements. Use `value` if you want to sort by value, `sf_metric` to sort by Plot Name. You can use any available dimension. Must be prepended with `+` for ascending or `-` for descending (e.g. `-foo`).
 * `synced` - (Optional) Whether the resource in SignalForm and SignalFx are identical or not. Used internally for syncing, you do not need to specify it. Whenever you see a change to this field in the plan, it means that your resource has been changed from the UI and Terraform is now going to re-sync it back to what is in your configuration.
