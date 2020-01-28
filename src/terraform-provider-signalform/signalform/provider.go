@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"runtime"
@@ -49,11 +50,18 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 	config := signalformConfig{}
 
 	// /etc/signalfx.conf has lowest priority
+	log.Printf("[DEBUG] Looking for config in system config (%s)...\n", SystemConfigPath)
 	if _, err := os.Stat(SystemConfigPath); err == nil {
+		log.Printf("[DEBUG] Found %s!\n", SystemConfigPath)
 		err = readConfigFile(SystemConfigPath, &config)
 		if err != nil {
+			log.Printf("Failed reading system config: %s\n", err.Error())
 			return nil, err
+		} else {
+			log.Printf("Parsed system config.")
 		}
+	} else {
+		log.Printf("Could not find %s\n", SystemConfigPath)
 	}
 
 	// $HOME/.signalfx.conf second
@@ -65,11 +73,19 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 			return nil, fmt.Errorf("Failed to get user environment %s", err.Error())
 		}
 	}
+
+	log.Printf("[DEBUG] Looking for config in home dir (%s)\n", HomeConfigPath)
 	if _, err := os.Stat(HomeConfigPath); err == nil {
+		log.Printf("[DEBUG] Found %s\n", HomeConfigPath)
 		err = readConfigFile(HomeConfigPath, &config)
 		if err != nil {
+			log.Printf("[DEBUG] Failed reading home dir config: %s\n", err.Error())
 			return nil, err
+		} else {
+			log.Printf("[DEBUG] Parsed home dir config.")
 		}
+	} else {
+		log.Printf("[DEBUG] Could not find %s\n", HomeConfigPath)
 	}
 
 	// Use netrc next
@@ -80,7 +96,10 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 
 	// provider is the top priority
 	if token, ok := data.GetOk("auth_token"); ok {
+		log.Printf("[DEBUG] Reading config from provider.\n")
 		config.AuthToken = token.(string)
+	} else {
+		log.Printf("[DEBUG] Did not find config in provider.\n")
 	}
 
 	if config.AuthToken == "" {
