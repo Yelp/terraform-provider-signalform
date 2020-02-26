@@ -97,7 +97,7 @@ func readConfigFile(configPath string, config *signalformConfig) error {
 	}
 	err = json.Unmarshal(configFile, config)
 	if err != nil {
-		return fmt.Errorf("Failed to parse config file. %s", err.Error())
+		return fmt.Errorf("Failed to parse config file (%s): %s", configPath, err.Error())
 	}
 	return nil
 }
