@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"runtime"
@@ -27,7 +28,7 @@ func Provider() terraform.ResourceProvider {
 			"auth_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SFX_AUTH_TOKEN", ""),
+				DefaultFunc: schema.EnvDefaultFunc("SFX_AUTH_TOKEN", nil),
 				Description: "SignalFx auth token",
 			},
 		},
@@ -49,11 +50,18 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 	config := signalformConfig{}
 
 	// /etc/signalfx.conf has lowest priority
+	log.Printf("[DEBUG] Looking for config in system config (%s)...\n", SystemConfigPath)
 	if _, err := os.Stat(SystemConfigPath); err == nil {
+		log.Printf("[DEBUG] Found %s!\n", SystemConfigPath)
 		err = readConfigFile(SystemConfigPath, &config)
 		if err != nil {
+			log.Printf("[DEBUG] Failed reading system config: %s\n", err.Error())
 			return nil, err
+		} else {
+			log.Printf("[DEBUG] Parsed system config.")
 		}
+	} else {
+		log.Printf("[DEBUG] Could not find %s\n", SystemConfigPath)
 	}
 
 	// $HOME/.signalfx.conf second
@@ -65,11 +73,19 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 			return nil, fmt.Errorf("Failed to get user environment %s", err.Error())
 		}
 	}
+
+	log.Printf("[DEBUG] Looking for config in home dir (%s)\n", HomeConfigPath)
 	if _, err := os.Stat(HomeConfigPath); err == nil {
+		log.Printf("[DEBUG] Found %s\n", HomeConfigPath)
 		err = readConfigFile(HomeConfigPath, &config)
 		if err != nil {
+			log.Printf("[DEBUG] Failed reading home dir config: %s\n", err.Error())
 			return nil, err
+		} else {
+			log.Printf("[DEBUG] Parsed home dir config.")
 		}
+	} else {
+		log.Printf("[DEBUG] Could not find %s\n", HomeConfigPath)
 	}
 
 	// Use netrc next
@@ -80,11 +96,18 @@ func signalformConfigure(data *schema.ResourceData) (interface{}, error) {
 
 	// provider is the top priority
 	if token, ok := data.GetOk("auth_token"); ok {
+		log.Printf("[DEBUG] Reading config from provider.\n")
+		log.Printf("[DEBUG] config.AuthToken has length %d provider data auth token has length %d", len(config.AuthToken), len(token.(string)))
 		config.AuthToken = token.(string)
+	} else {
+		log.Printf("[DEBUG] Did not find config in provider.\n")
 	}
 
-	if config.AuthToken == "" {
+	if len(config.AuthToken) == 0 {
+		log.Printf("[DEBUG] config.AuthToken has length %d", len(config.AuthToken))
 		return &config, fmt.Errorf("auth_token: required field is not set")
+	} else {
+		log.Printf("[DEBUG] config.AuthToken is longer than 0 bytes")
 	}
 
 	return &config, nil

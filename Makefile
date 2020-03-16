@@ -35,6 +35,7 @@ clean:
 	rm -rf pkg
 	make -C build clean
 	rm -f deps
+	rm -rf src/terraform-provider-signalform/vendor
 
 .PHONY: build
 build: test
