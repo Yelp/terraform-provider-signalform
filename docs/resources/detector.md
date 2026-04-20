@@ -19,7 +19,7 @@ resource "signalform_detector" "application_delay" {
         detect(when(signal > 60, '5m')).publish('Processing old messages 5m')
         detect(when(signal > 60, '30m')).publish('Processing old messages 30m')
     EOF
- rule {
+    rule {
         description = "maximum > 60 for 5m"
         severity = "Warning"
         detect_label = "Processing old messages 5m"
