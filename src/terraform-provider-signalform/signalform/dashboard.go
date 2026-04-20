@@ -3,6 +3,7 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -487,7 +488,7 @@ func dashboardCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
-
+	log.Printf("[SignalForm] Dashboard Create Payload: %s", string(payload))
 	return resourceCreate(DASHBOARD_API_URL, config.AuthToken, payload, d)
 }
 
@@ -505,7 +506,7 @@ func dashboardUpdate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failed creating json payload: %s", err.Error())
 	}
 	url := fmt.Sprintf("%s/%s", DASHBOARD_API_URL, d.Id())
-
+	log.Printf("[SignalForm] Dashboard Update Payload: %s", string(payload))
 	return resourceUpdate(url, config.AuthToken, payload, d)
 }
 
