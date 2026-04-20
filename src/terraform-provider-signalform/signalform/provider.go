@@ -41,6 +41,7 @@ func Provider() terraform.ResourceProvider {
 			"signalform_text_chart":         textChartResource(),
 			"signalform_dashboard":          dashboardResource(),
 			"signalform_dashboard_group":    dashboardGroupResource(),
+			"signalform_integration":        integrationResource(),
 		},
 		ConfigureFunc: signalformConfigure,
 	}

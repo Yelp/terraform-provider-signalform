@@ -25,6 +25,7 @@ Changelog is available [here](https://github.com/Yelp/terraform-provider-signalf
         * [Text Note](https://yelp.github.io/terraform-provider-signalform/resources/text_note.html)
     * [Dashboard](https://yelp.github.io/terraform-provider-signalform/resources/dashboard.html)
     * [Dashboard Group](https://yelp.github.io/terraform-provider-signalform/resources/dashboard_group.html)
+    * [Integration](https://yelp.github.io/terraform-provider-signalform/resources/integration.html)
 * [Build And Install](#build-and-install)
     * [Build binary from source](#build-binary-from-source)
     * [Build debian package from source](#build-debian-package-from-source)
