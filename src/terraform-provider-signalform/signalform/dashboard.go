@@ -249,6 +249,12 @@ func dashboardResource() *schema.Resource {
 							Default:     false,
 							Description: "If true, this variable will only apply to charts with a filter on the named property.",
 						},
+						"apply_if_exist": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, this variable will also match data that does not have the specified property",
+						},
 					},
 				},
 			},
@@ -274,6 +280,12 @@ func dashboardResource() *schema.Resource {
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "List of strings (which will be treated as an OR filter on the property)",
+						},
+						"apply_if_exist": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "If true, this filter will also match data that does not have the specified property",
 						},
 					},
 				},
@@ -457,6 +469,7 @@ func getDashboardVariables(d *schema.ResourceData) []map[string]interface{} {
 			}
 		}
 		item["restricted"] = variable["restricted_suggestions"].(bool)
+		item["applyIfExists"] = variable["apply_if_exist"].(bool)
 
 		item["replaceOnly"] = variable["replace_only"].(bool)
 
@@ -474,6 +487,7 @@ func getDashboardFilters(d *schema.ResourceData) []map[string]interface{} {
 
 		item["property"] = filter["property"].(string)
 		item["NOT"] = filter["negated"].(bool)
+		item["applyIfExists"] = filter["apply_if_exist"].(bool)
 		item["value"] = filter["values"].(*schema.Set).List()
 
 		filter_list[i] = item

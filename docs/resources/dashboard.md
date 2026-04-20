@@ -52,6 +52,7 @@ The following arguments are supported in the resource block:
     * `property` - (Required) A metric time series dimension or property name.
     * `not` - (Optional) Whether this filter should be a not filter. `false` by default.
     * `values` - (Required) List of of strings (which will be treated as an OR filter on the property).
+    * `apply_if_exist` - (Optional) If true, this filter will also match data that doesn't have this property at all.
 * `variable` - (Optional) Dashboard variable to apply to each chart in the dashboard.
     * `property` - (Required) A metric time series dimension or property name.
     * `alias` - (Required) An alias for the dashboard variable. This text will appear as the label for the dropdown field on the dashboard.
@@ -61,6 +62,7 @@ The following arguments are supported in the resource block:
     * `values_suggested` - (Optional) A list of strings of suggested values for this variable; these suggestions will receive priority when values are autosuggested for this variable.
     * `restricted_suggestions` - (Optional) If `true`, this variable may only be set to the values listed in `values_suggested` and only these values will appear in autosuggestion menus. `false` by default.
     * `replace_only` - (Optional) If `true`, this variable will only apply to charts that have a filter for the property.
+    * `apply_if_exist` - (Optional) If true, this variable will also match data that doesn't have this property at all.
 * `chart` - (Optional) Chart ID and layout information for the charts in the dashboard.
     * `chart_id` - (Required) ID of the chart to display.
     * `width` - (Optional) How many columns (out of a total of 12) the chart should take up (between `1` and `12`). `12` by default.
