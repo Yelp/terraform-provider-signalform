@@ -3,9 +3,12 @@ package signalform
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"math"
+	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 var PaletteColors = map[string]int{
@@ -25,6 +28,42 @@ var PaletteColors = map[string]int{
 	"emerald":    13,
 	"green":      14,
 	"aquamarine": 15,
+}
+
+func resourceAxisMigrateState(v int, is *terraform.InstanceState, meta interface{}) (*terraform.InstanceState, error) {
+	switch v {
+	case 0:
+		return migrateAxisStateV0toV1(is)
+	default:
+		return is, fmt.Errorf("Unexpected schema version: %d", v)
+	}
+}
+
+func migrateAxisStateV0toV1(is *terraform.InstanceState) (*terraform.InstanceState, error) {
+	if is.Empty() || is.Attributes == nil {
+		return is, nil
+	}
+	if v, ok := is.Attributes["max_value"]; ok {
+		if f, err := strconv.ParseFloat(v, 32); err == nil && f == math.MaxFloat32 {
+			delete(is.Attributes, "max_value")
+		}
+	}
+	if v, ok := is.Attributes["min_value"]; ok {
+		if f, err := strconv.ParseFloat(v, 32); err == nil && f == -math.MaxFloat32 {
+			delete(is.Attributes, "min_value")
+		}
+	}
+	if v, ok := is.Attributes["low_watermark"]; ok {
+		if f, err := strconv.ParseFloat(v, 32); err == nil && f == -math.MaxFloat32 {
+			delete(is.Attributes, "low_watermark")
+		}
+	}
+	if v, ok := is.Attributes["high_watermark"]; ok {
+		if f, err := strconv.ParseFloat(v, 32); err == nil && f == math.MaxFloat32 {
+			delete(is.Attributes, "high_watermark")
+		}
+	}
+	return is, nil
 }
 
 func timeChartResource() *schema.Resource {
@@ -116,17 +155,17 @@ func timeChartResource() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
+					SchemaVersion: 1,
+					MigrateState:  resourceAxisMigrateState,
 					Schema: map[string]*schema.Schema{
 						"min_value": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     -math.MaxFloat32,
 							Description: "The minimum value for the right axis",
 						},
 						"max_value": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxFloat32,
 							Description: "The maximum value for the right axis",
 						},
 						"label": &schema.Schema{
@@ -137,7 +176,6 @@ func timeChartResource() *schema.Resource {
 						"high_watermark": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxFloat32,
 							Description: "A line to draw as a high watermark",
 						},
 						"high_watermark_label": &schema.Schema{
@@ -148,13 +186,30 @@ func timeChartResource() *schema.Resource {
 						"low_watermark": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     -math.MaxFloat32,
 							Description: "A line to draw as a low watermark",
 						},
 						"low_watermark_label": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A label to attach to the low watermark line",
+						},
+						"watermarks": &schema.Schema{
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Required:    true,
+										Description: "Axis value where the watermark line will be displayed",
+									},
+									"label": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Label to display associated with the watermark line",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -163,17 +218,17 @@ func timeChartResource() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
+					SchemaVersion: 1,
+					MigrateState:  resourceAxisMigrateState,
 					Schema: map[string]*schema.Schema{
 						"min_value": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     -math.MaxFloat32,
 							Description: "The minimum value for the left axis",
 						},
 						"max_value": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxFloat32,
 							Description: "The maximum value for the left axis",
 						},
 						"label": &schema.Schema{
@@ -184,7 +239,6 @@ func timeChartResource() *schema.Resource {
 						"high_watermark": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     math.MaxFloat32,
 							Description: "A line to draw as a high watermark",
 						},
 						"high_watermark_label": &schema.Schema{
@@ -195,13 +249,30 @@ func timeChartResource() *schema.Resource {
 						"low_watermark": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
-							Default:     -math.MaxFloat32,
 							Description: "A line to draw as a low watermark",
 						},
 						"low_watermark_label": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A label to attach to the low watermark line",
+						},
+						"watermarks": &schema.Schema{
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Required:    true,
+										Description: "Axis value where the watermark line will be displayed",
+									},
+									"label": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Label to display associated with the watermark line",
+									},
+								},
+							},
 						},
 					},
 				},
