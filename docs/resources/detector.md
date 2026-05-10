@@ -43,7 +43,7 @@ variable "clusters" {
 ## Argument Reference
 
 * `name` - (Required) Name of the detector.
-* `program_text` - (Required) Signalflow program text for the detector. More info at <https://developers.signalfx.com/docs/signalflow-overview>.
+* `program_text` - (Required) Signalflow program text for the detector. More info at <https://developers.signalfx.com/signalflow_analytics/signalflow_overview.html>.
 * `description` - (Optional) Description of the detector.
 * `max_delay` - (Optional) How long (in seconds) to wait for late datapoints. See <https://signalfx-product-docs.readthedocs-hosted.com/en/latest/charts/chart-builder.html#delayed-datapoints> for more info. Max value is `900` seconds (15 minutes).
 * `show_data_markers` - (Optional) When `true`, markers will be drawn for each datapoint within the visualization. `false` by default.
@@ -56,9 +56,9 @@ variable "clusters" {
     * `detect_label` - (Required) A detect label which matches a detect label within `program_text`.
     * `severity` - (Required) The severity of the rule, must be one of: `"Critical"`, `"Major"`, `"Minor"`, `"Warning"`, `"Info"`.
     * `disabled` - (Optional) When true, notifications and events will not be generated for the detect label. `false` by default.
-    * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/v2/reference#section-notifications> for more info.
-    * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See <https://developers.signalfx.com/v2/reference#section-custom-notification-messages> for more info.
-    * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See <https://developers.signalfx.com/v2/reference#section-custom-notification-messages> for more info.
+    * `notifications` - (Optional) List of strings specifying where notifications will be sent when an incident occurs. See <https://developers.signalfx.com/detectors_events_alerts/detectors_overview.html#_notifications> for more info.
+    * `parameterized_body` - (Optional) Custom notification message body when an alert is triggered. See <https://developers.signalfx.com/detectors_events_alerts/detectors_overview.html#_custom_notification_messages> for more info.
+    * `parameterized_subject` - (Optional) Custom notification message subject when an alert is triggered. See <https://developers.signalfx.com/detectors_events_alerts/detectors_overview.html#_custom_notification_messages> for more info.
     * `runbook_url` - (Optional) URL of page to consult when an alert is triggered. This can be used with custom notification messages.
     * `tip` - (Optional) Plain text suggested first course of action, such as a command line to execute. This can be used with custom notification messages.
 
