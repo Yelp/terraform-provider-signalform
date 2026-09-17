@@ -16,6 +16,7 @@ fpm \
     -s dir \
     -t deb --name ${project}-${tf_version} \
     --iteration ${iteration} \
+    --architecture $(dpkg --print-architecture) \
     --version ${version} \
     /go/bin/${project}="${tf_path}"/bin/
 

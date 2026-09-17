@@ -12,13 +12,16 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-instal
     ruby-dev \
     wget
 
-RUN wget --no-check-certificate https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz && tar xzf go${GO_VERSION}.linux-amd64.tar.gz && mv go /usr/local
+RUN wget --no-check-certificate https://dl.google.com/go/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz && tar xzf go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz && mv go /usr/local
 ENV PATH /usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/go/bin:/go/bin
 ENV GOPATH /go
 RUN mkdir /go
 ENV RUBYOPT="-KU -E utf-8:utf-8"
 RUN gem install json --no-rdoc --no-ri -v 2.2.0
 RUN gem install ffi --no-rdoc --no-ri -v 1.10.0
+# Pin io-like to a version compatible with the Ruby in this image; fpm
+# depends on it transitively (via ruby-xz) and newer versions require Ruby >= 2.7
+RUN gem install io-like --no-rdoc --no-ri -v 0.3.1
 RUN gem install fpm --no-rdoc --no-ri -v 1.11.0
 
 RUN git clone https://github.com/hashicorp/terraform.git /go/src/github.com/hashicorp/terraform && \

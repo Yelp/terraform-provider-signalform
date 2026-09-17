@@ -15,7 +15,11 @@ ITERATION := $(ORG)$(REAL_BUILD_NUMBER)
 
 TF_PATH ?= /nail/opt/terraform-$(TF_VERSION)
 
-PACKAGE_NAME := $(PROJECT)-$(TF_VERSION)_$(VERSION)-$(ITERATION)_amd64.deb
+# Architecture of the .deb we are building. Builds happen natively, so this is
+# the architecture of the build host (amd64 or arm64).
+DEB_ARCH := $(shell dpkg --print-architecture)
+
+PACKAGE_NAME := $(PROJECT)-$(TF_VERSION)_$(VERSION)-$(ITERATION)_$(DEB_ARCH).deb
 PACKAGE_FILE := dist/$(PACKAGE_NAME)
 
 BINARY_FILE := dist/$(PROJECT)-$(GOOS)_$(GOARCH)
@@ -28,7 +32,7 @@ CLEAN_CONTAINER := [ -e .docker_container_id ] && docker rm --force $$(cat .dock
 .PHONY: itest_%
 itest_%: $(PACKAGE_FILE)
 ifeq ($(ORG),yelp)
-	$(eval DOCKER_BASE := docker-dev.yelpcorp.com/$*_yelp:latest)
+	$(eval DOCKER_BASE := docker-images.yelpcorp.com/$*_yelp:latest)
 else
 	$(eval DOCKER_BASE := ubuntu:$*)
 endif
